@@ -72,11 +72,12 @@ const sections: Section[] = [
 ]
 
 const menuGroups: Array<[string, string[]]> = [
-  ['Orders', ['All orders', 'Order statuses', 'Auto assignment', 'Invoice settings', 'Reservations', 'Custom fields', 'Order options', 'Export templates', 'Automatic tags']],
-  ['Products', ['All products', 'Categories & options', 'Product editor', 'Bulk quantities', 'Inventory transfer', 'Product campaigns', 'Product restrictions', 'Import products', 'Export products', 'Stock audit']],
-  ['Marketing', ['Ads dashboard', 'Snapchat integration', 'Abandoned carts', 'Coupons', 'Cashback', 'Influencers', 'Offers', 'Retargeting', 'Marketing calendar', 'Customer wallet', 'Affiliate', 'SEO', 'Loyalty', 'Quick checkout', 'Gift', 'Reorder reminders']],
-  ['Online Store', ['Store design', 'Theme Marketplace', 'Domain', 'Information pages', 'Custom URLs', 'Salla Point', 'Mobile app', 'Landing pages']],
-  ['Customers', ['All customers', 'Settings', 'Customer groups', 'Import customers']],
+  ['Orders', ['All orders', 'Order settings', 'Order statuses', 'Bulk status update', 'Auto assignment', 'Invoice settings', 'Bookings', 'Custom fields', 'Cart options', 'Export templates', 'Auto tags']],
+  ['Products', ['All products', 'Product settings', 'Categories & options', 'Product editor', 'Inventory management', 'Inventory transfer', 'Pre-order campaigns', 'Product restrictions', 'Inventory audit', 'Import from platforms', 'Import & export', 'Export templates', 'Warehouses & branches', 'Retail stores']],
+  ['Marketing', ['Salla Ads', 'Pixels & feeds', 'Abandoned carts', 'Coupons', 'Cashback offers', 'Influencers', 'Special offers', 'Campaigns', 'Cart offers', 'Marketing calendar', 'Customer wallet', 'Affiliate marketing', 'SEO', 'Loyalty program', 'Quick checkout', 'Gifting', 'Reorder Reminder']],
+  ['Online Store', ['Store design', 'Theme Marketplace', 'Domain', 'Information pages', 'Custom URLs']],
+  ['Sales Channels', ['Salla Point', 'Mobile app', 'Landing pages']],
+  ['Customers', ['All customers', 'Settings', 'Customer groups', 'Import customers', 'Custom fields']],
   ['Staff', ['Staff', 'Roles & permissions', 'Employees targets']],
   ['Reports', ['Store performance', 'Smart analytics', 'Manage reports']],
   ['Support', ['Reviews', 'Tickets', 'Shipping tickets', 'Chat', 'Complaints']],
@@ -92,9 +93,87 @@ const carriers = ['Aramex', 'Smsa', 'DHL Express', 'Fetchr', 'J&T Express', 'Red
 const apps = ['Offers Bundles Upsell Cross sell', 'Zud, Increase Average Order Value', 'InstaCart - Shoppable Instagram Feed', 'Alfinder', 'Bousla', 'Wallet Plus', 'WhatsApp Chat Button', 'Rawaj Sales Boost Widgets']
 const themes = ['وسام', 'إتقان', 'زاد', 'ليما', 'رايد', 'مواسم']
 
+const specialPageDetails: Record<string, { badge?: string; title: string; body: string; locked?: boolean }> = {
+  'Orders:Custom fields': {
+    badge: 'Available on Pro and Special',
+    title: 'Custom data for your customers',
+    body: 'Add custom fields in the order or registration form to collect additional information from customers, which helps you provide a customized shopping experience that meets their needs.',
+    locked: true,
+  },
+  'Orders:Bulk status update': {
+    badge: 'Available on Plus, Pro, and Special',
+    title: 'Update many orders at once',
+    body: 'Select a group of orders and move them to the right status without opening every order manually.',
+    locked: true,
+  },
+  'Orders:Order statuses': {
+    badge: 'Available on your plan',
+    title: 'Customize your order workflow',
+    body: 'Create and organize statuses so merchants can follow each order from checkout to delivery.',
+  },
+  'Orders:Auto assignment': {
+    badge: 'Available on Plus, Pro, and Special',
+    title: 'Assign orders automatically',
+    body: 'Distribute new orders across your team based on rules, workload, or order source.',
+    locked: true,
+  },
+  'Products:Product editor': {
+    badge: 'Available on Plus, Pro, and Special',
+    title: 'Bulk Product Editor',
+    body: 'Edit prices, quantities, categories, and product details in bulk from one table.',
+    locked: true,
+  },
+  'Marketing:Abandoned carts': {
+    badge: 'Available on Plus, Pro, and Special',
+    title: 'Recover abandoned carts',
+    body: 'Send automated reminders and bring customers back to complete their orders.',
+    locked: true,
+  },
+  'Marketing:Loyalty program': {
+    badge: 'Available on Pro and Special',
+    title: 'Reward your repeat customers',
+    body: 'Create points, tiers, and rewards that encourage customers to come back to your store.',
+    locked: true,
+  },
+  'Online Store:Domain': {
+    badge: 'Available on your plan',
+    title: 'Connect your store domain',
+    body: 'Manage your default link, custom domain, DNS state, and renewal information.',
+  },
+  'Payments:Store verification': {
+    badge: 'Required',
+    title: "Your store isn't verified",
+    body: 'Verify your store to activate and manage online payments securely.',
+    locked: true,
+  },
+  'Apps & Logs:Activity history': {
+    badge: 'Available on Plus, Pro, and Special',
+    title: 'Full tracking of all your store activity',
+    body: 'Follow messages, activities, and export files from one place and see who performed each action.',
+    locked: true,
+  },
+}
+
+function routeForMenuLink(group: string, link: string): DashboardScreen {
+  if (group === 'Apps & Logs' && ['SMS log', 'Activity history', 'Export log'].includes(link)) return 'logs'
+  if (group === 'Apps & Logs') return 'apps'
+  if (group === 'Online Store' || group === 'Sales Channels') return 'store'
+  if (group === 'Orders') return 'orders'
+  if (group === 'Products') return 'products'
+  if (group === 'Marketing') return 'marketing'
+  if (group === 'Customers') return 'customers'
+  if (group === 'Staff') return 'staff'
+  if (group === 'Reports') return 'reports'
+  if (group === 'Support') return 'support'
+  if (group === 'Shipping') return 'shipping'
+  if (group === 'Payments') return 'payments'
+  return 'summary'
+}
+
 function App() {
   const [screen, setScreen] = useState<Screen>('landing')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [activePageKey, setActivePageKey] = useState<string | null>(null)
   const active = useMemo(() => sections.find((section) => section.id === screen) ?? sections[0], [screen])
 
   if (screen === 'landing') {
@@ -115,23 +194,27 @@ function App() {
 
   return (
     <main className="salla-shell" dir="ltr">
-      <Header active={active} screen={screen} setScreen={setScreen} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
-      {menuOpen && <MegaMenu setScreen={setScreen} setMenuOpen={setMenuOpen} />}
+      <Header active={active} screen={screen} setScreen={setScreen} setActivePageKey={setActivePageKey} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      {menuOpen && <MegaMenu setScreen={setScreen} setActivePageKey={setActivePageKey} setMenuOpen={setMenuOpen} />}
       <SubNav active={active} />
       <section className="workspace">
-        {screen === 'summary' && <StoreSummary />}
-        {screen === 'orders' && <Orders />}
-        {screen === 'products' && <Products />}
-        {screen === 'marketing' && <Marketing />}
-        {screen === 'store' && <StoreDesign />}
-        {screen === 'customers' && <Customers />}
-        {screen === 'staff' && <Staff />}
-        {screen === 'reports' && <Reports />}
-        {screen === 'support' && <Support />}
-        {screen === 'shipping' && <Shipping />}
-        {screen === 'payments' && <Payments />}
-        {screen === 'apps' && <Apps />}
-        {screen === 'logs' && <Logs />}
+        {activePageKey ? <DynamicPage pageKey={activePageKey} /> : (
+          <>
+            {screen === 'summary' && <StoreSummary />}
+            {screen === 'orders' && <Orders />}
+            {screen === 'products' && <Products />}
+            {screen === 'marketing' && <Marketing />}
+            {screen === 'store' && <StoreDesign />}
+            {screen === 'customers' && <Customers />}
+            {screen === 'staff' && <Staff />}
+            {screen === 'reports' && <Reports />}
+            {screen === 'support' && <Support />}
+            {screen === 'shipping' && <Shipping />}
+            {screen === 'payments' && <Payments />}
+            {screen === 'apps' && <Apps />}
+            {screen === 'logs' && <Logs />}
+          </>
+        )}
       </section>
       <button className="chat-fab" aria-label="الدعم الفني"><MessageCircle size={24} /></button>
     </main>
@@ -489,12 +572,14 @@ function Header({
   active,
   screen,
   setScreen,
+  setActivePageKey,
   menuOpen,
   setMenuOpen,
 }: {
   active: Section
   screen: Screen
   setScreen: (screen: Screen) => void
+  setActivePageKey: (key: string | null) => void
   menuOpen: boolean
   setMenuOpen: (open: boolean) => void
 }) {
@@ -505,6 +590,7 @@ function Header({
         className="brand brand-button"
         onClick={() => {
           setScreen('landing')
+          setActivePageKey(null)
           setMenuOpen(false)
         }}
       >
@@ -522,6 +608,7 @@ function Header({
               key={item.id}
               onClick={() => {
                 setScreen(item.id)
+                setActivePageKey(null)
                 setMenuOpen(false)
               }}
             >
@@ -533,6 +620,7 @@ function Header({
           className={active.id === 'reports' ? 'active nav-button' : 'nav-button'}
           onClick={() => {
             setScreen('reports')
+            setActivePageKey(null)
             setMenuOpen(false)
           }}
         >
@@ -543,7 +631,7 @@ function Header({
         <button className="ask"><Sparkles size={18} /></button>
         <button className="tool"><Search size={20} /></button>
         <button className="tool"><Grid3X3 size={20} /></button>
-        <button className="tool" onClick={() => setScreen('support')}><MessageCircle size={20} /></button>
+        <button className="tool" onClick={() => { setScreen('support'); setActivePageKey(null) }}><MessageCircle size={20} /></button>
         <button className="tool"><Bell size={20} /></button>
         <button className="tool"><Settings size={20} /></button>
         <button className="profile">
@@ -557,20 +645,15 @@ function Header({
   )
 }
 
-function MegaMenu({ setScreen, setMenuOpen }: { setScreen: (screen: Screen) => void; setMenuOpen: (open: boolean) => void }) {
-  const routeByGroup: Record<string, Screen> = {
-    Orders: 'orders',
-    Products: 'products',
-    Marketing: 'marketing',
-    'Online Store': 'store',
-    Customers: 'customers',
-    Staff: 'staff',
-    Reports: 'reports',
-    Support: 'support',
-    Shipping: 'shipping',
-    Payments: 'payments',
-    'Apps & Logs': 'apps',
-  }
+function MegaMenu({
+  setScreen,
+  setActivePageKey,
+  setMenuOpen,
+}: {
+  setScreen: (screen: Screen) => void
+  setActivePageKey: (key: string | null) => void
+  setMenuOpen: (open: boolean) => void
+}) {
   return (
     <section className="mega-menu">
       {menuGroups.map(([group, links]) => (
@@ -580,7 +663,8 @@ function MegaMenu({ setScreen, setMenuOpen }: { setScreen: (screen: Screen) => v
             <button
               key={link}
               onClick={() => {
-                setScreen(routeByGroup[group] ?? 'summary')
+                setScreen(routeForMenuLink(group, link))
+                setActivePageKey(`${group}:${link}`)
                 setMenuOpen(false)
               }}
             >
@@ -675,6 +759,124 @@ function Checklist() {
         </article>
       ))}
     </div>
+  )
+}
+
+function DynamicPage({ pageKey }: { pageKey: string }) {
+  const [group, link] = pageKey.split(':')
+  const route = routeForMenuLink(group, link)
+  const groupLinks = menuGroups.find(([name]) => name === group)?.[1] ?? [link]
+  const detail = specialPageDetails[pageKey]
+  const asideTitle = group === 'Apps & Logs' ? 'Apps & Logs' : group
+  const pageTitle = link || sections.find((section) => section.id === route)?.label || 'Home'
+
+  if (detail) {
+    return (
+      <PageShell crumb={group} title={pageTitle} aside={<FilterList title={asideTitle} items={groupLinks} activeItem={pageTitle} />}>
+        <LockedFeature title={pageTitle} badge={detail.badge} body={detail.title} description={detail.body} />
+        {detail.locked ? <UnavailablePanel /> : <PagePreview title={detail.title} group={group} link={pageTitle} />}
+      </PageShell>
+    )
+  }
+
+  if (route === 'orders') {
+    return (
+      <PageShell crumb="Orders" title={pageTitle} aside={<FilterList title="Orders" items={groupLinks} activeItem={pageTitle} />}>
+        {pageTitle === 'All orders' ? <SplitEmpty title="No order selected" action="Filter" /> : <PagePreview title={pageTitle} group={group} link={pageTitle} />}
+      </PageShell>
+    )
+  }
+
+  if (route === 'products') {
+    return (
+      <PageShell crumb="Products" title={pageTitle} aside={<FilterList title="Products" items={groupLinks} activeItem={pageTitle} />}>
+        {pageTitle === 'All products' ? <SplitEmpty title="No products selected" action="Filter" /> : <PagePreview title={pageTitle} group={group} link={pageTitle} />}
+      </PageShell>
+    )
+  }
+
+  if (route === 'marketing') {
+    return (
+      <PageShell crumb="Marketing" title={pageTitle} aside={<FilterList title="Marketing" items={groupLinks} activeItem={pageTitle} />}>
+        <PagePreview title={pageTitle} group={group} link={pageTitle} />
+      </PageShell>
+    )
+  }
+
+  if (route === 'store') {
+    return (
+      <PageShell crumb={group} title={pageTitle} aside={<FilterList title={group} items={groupLinks} activeItem={pageTitle} />}>
+        {pageTitle === 'Store design' || pageTitle === 'Theme Marketplace' ? (
+          <FeatureHero title={pageTitle} badge="Available on your plan" body="Customize the storefront experience, pages, channels, and launch-ready presentation." action="Open editor" />
+        ) : (
+          <PagePreview title={pageTitle} group={group} link={pageTitle} />
+        )}
+      </PageShell>
+    )
+  }
+
+  if (route === 'reports') {
+    return (
+      <PageShell crumb="Reports" title={pageTitle} aside={<FilterList title="Reports" items={groupLinks} activeItem={pageTitle} />}>
+        <div className="date-card">Jul 2026, 28 - Aug 2026, 04 <button>...</button></div>
+        <MetricGrid metrics={[['Gross sales', ''], ['Orders', ''], ['Conversion', ''], ['Visits', '']]} skeleton />
+      </PageShell>
+    )
+  }
+
+  return (
+    <PageShell crumb={group} title={pageTitle} aside={<FilterList title={asideTitle} items={groupLinks} activeItem={pageTitle} />}>
+      <PagePreview title={pageTitle} group={group} link={pageTitle} />
+    </PageShell>
+  )
+}
+
+function PagePreview({ title, group, link }: { title: string; group: string; link: string }) {
+  const rows = [
+    [title, group, 'Ready screen'],
+    ['Filters', 'Visual only', 'No backend yet'],
+    ['Actions', link.includes('settings') || link.includes('Settings') ? 'Settings layout' : 'Empty state', 'Draft'],
+  ]
+
+  return (
+    <div className="dynamic-stack">
+      <section className="dynamic-hero">
+        <span>{group}</span>
+        <h1>{title}</h1>
+        <p>This screen is now connected from the All menu with its own title, breadcrumb, side navigation, and Salla-style empty workspace.</p>
+        <div>
+          <button>Primary action</button>
+          <button>Learn more</button>
+        </div>
+      </section>
+      <div className="split-empty">
+        <section>
+          <button className="filter"><Filter size={17} /> Filter</button>
+          <div className="empty-lines"><i /><i /><i /><i /></div>
+        </section>
+        <section><Empty title={`No ${title.toLowerCase()} selected`} body="The visual structure is ready. Functional data can be connected later." /></section>
+      </div>
+      <Panel title={`${title} preview`}>
+        <Table rows={rows} />
+      </Panel>
+    </div>
+  )
+}
+
+function UnavailablePanel() {
+  return (
+    <section className="unavailable-panel">
+      <div>
+        <ShieldCheck size={38} />
+        <span>Upgrade required</span>
+        <h2>This feature isn't available on your plan</h2>
+        <p>Try the "Pro" or "Special" plan free to unlock this feature and more for your store.</p>
+      </div>
+      <div className="locked-actions">
+        <button>Learn more</button>
+        <button>Start free trial</button>
+      </div>
+    </section>
   )
 }
 
@@ -833,23 +1035,24 @@ function PageShell({ crumb, title, aside, children }: { crumb: string; title: st
   )
 }
 
-function FilterList({ title, items, footer }: { title: string; items: string[]; footer?: string }) {
+function FilterList({ title, items, footer, activeItem }: { title: string; items: string[]; footer?: string; activeItem?: string }) {
   return (
     <nav className="side-list">
       <h3>{title}</h3>
-      {items.map((item, index) => <button className={index === 0 ? 'active' : ''} key={item}>{item}{index < 4 && <small>0</small>}</button>)}
+      {items.map((item, index) => <button className={(activeItem ? item === activeItem : index === 0) ? 'active' : ''} key={item}>{item}{index < 4 && <small>0</small>}</button>)}
       {footer && <button className="manage">{footer}</button>}
     </nav>
   )
 }
 
-function LockedFeature({ title, body }: { title: string; body: string }) {
+function LockedFeature({ title, body, badge = 'Available on Plus, Pro, and Special', description }: { title: string; body: string; badge?: string; description?: string }) {
   return (
     <section className="locked-card">
       <div>
         <span>{title}</span>
-        <small>Available on Plus, Pro, and Special</small>
+        <small>{badge}</small>
         <h2>{body}</h2>
+        {description && <p>{description}</p>}
       </div>
       <div className="locked-actions">
         <button>Learn more</button>

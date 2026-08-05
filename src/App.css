@@ -1155,6 +1155,8 @@ button {
 .panel,
 .locked-card,
 .feature-hero,
+.dynamic-hero,
+.unavailable-panel,
 .metric-grid article,
 .side-list,
 .split-empty section,
@@ -1496,7 +1498,8 @@ button {
 }
 
 .locked-card,
-.feature-hero {
+.feature-hero,
+.unavailable-panel {
   display: flex;
   justify-content: space-between;
   gap: 20px;
@@ -1504,14 +1507,18 @@ button {
 }
 
 .locked-card span,
-.feature-hero span {
+.feature-hero span,
+.dynamic-hero span,
+.unavailable-panel span {
   display: block;
   color: var(--text);
   font-weight: 900;
 }
 
 .locked-card h2,
-.feature-hero h1 {
+.feature-hero h1,
+.dynamic-hero h1,
+.unavailable-panel h2 {
   margin-top: 8px;
   font-size: 22px;
 }
@@ -1692,6 +1699,64 @@ button {
 
 .feature-hero small {
   margin-left: 8px;
+}
+
+.dynamic-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.dynamic-hero {
+  padding: 18px;
+}
+
+.dynamic-hero h1,
+.dynamic-hero p,
+.unavailable-panel h2,
+.unavailable-panel p,
+.locked-card p {
+  margin-bottom: 0;
+}
+
+.dynamic-hero p,
+.unavailable-panel p,
+.locked-card p {
+  max-width: 760px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.dynamic-hero > div {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.dynamic-hero button {
+  min-height: 38px;
+  border: 1px solid var(--mint);
+  border-radius: 8px;
+  padding: 0 14px;
+  color: var(--mint);
+  background: transparent;
+  font-weight: 850;
+}
+
+.dynamic-hero button:first-child {
+  color: #123330;
+  background: var(--mint);
+}
+
+.unavailable-panel {
+  align-items: center;
+  background:
+    linear-gradient(135deg, rgba(154, 243, 223, 0.08), transparent 45%),
+    var(--panel);
+}
+
+.unavailable-panel svg {
+  color: var(--mint);
 }
 
 .theme-grid,
