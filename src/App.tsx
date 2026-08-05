@@ -169,7 +169,15 @@ function routeForMenuLink(group: string, link: string): DashboardScreen {
   if (group === 'Support') return 'support'
   if (group === 'Shipping') return 'shipping'
   if (group === 'Payments') return 'payments'
+  if (group === 'Settings') return 'settings'
   return 'summary'
+}
+
+function groupForSection(section: Section): string {
+  if (section.id === 'store') return 'Online Store'
+  if (section.id === 'apps' || section.id === 'logs') return 'Apps & Logs'
+  if (section.id === 'settings') return 'Settings'
+  return section.label
 }
 
 function App() {
@@ -198,7 +206,7 @@ function App() {
     <main className="salla-shell" dir="ltr">
       <Header active={active} screen={screen} setScreen={setScreen} setActivePageKey={setActivePageKey} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       {menuOpen && <MegaMenu setScreen={setScreen} setActivePageKey={setActivePageKey} setMenuOpen={setMenuOpen} />}
-      <SubNav active={active} />
+      <SubNav active={active} activePageKey={activePageKey} setScreen={setScreen} setActivePageKey={setActivePageKey} />
       <section className="workspace">
         {activePageKey ? <DynamicPage pageKey={activePageKey} setScreen={setScreen} setActivePageKey={setActivePageKey} /> : (
           <>
@@ -831,11 +839,43 @@ function MegaMenu({
   )
 }
 
-function SubNav({ active }: { active: Section }) {
+function SubNav({
+  active,
+  activePageKey,
+  setScreen,
+  setActivePageKey,
+}: {
+  active: Section
+  activePageKey: string | null
+  setScreen: (screen: Screen) => void
+  setActivePageKey: (key: string | null) => void
+}) {
+  const group = groupForSection(active)
+  const activeTab = activePageKey?.startsWith(`${group}:`) ? activePageKey.split(':')[1] : active.tabs[0]
+  const openTab = (tab: string) => {
+    if (active.id === 'summary') {
+      setScreen('summary')
+      setActivePageKey(null)
+      return
+    }
+
+    setScreen(routeForMenuLink(group, tab))
+    setActivePageKey(`${group}:${tab}`)
+  }
+
   return (
     <nav className="sub-nav">
       <div>
-        {active.tabs.map((tab, index) => <button className={index === 0 ? 'active' : ''} key={tab}>{tab}</button>)}
+        {active.tabs.map((tab) => (
+          <button
+            aria-label={tab}
+            className={activeTab === tab ? 'active' : ''}
+            key={tab}
+            onClick={() => openTab(tab)}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
       {active.action && <button className="mint-action"><Plus size={18} /> {active.action}</button>}
     </nav>
