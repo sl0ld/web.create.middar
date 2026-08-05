@@ -1,0 +1,49 @@
+:root {
+  --ink: #020617;
+  --navy: #0a2342;
+  --navy-soft: #12345a;
+  --muted: #64748b;
+  --muted-strong: #475569;
+  --line: #e2e8f0;
+  --soft: #f8fafc;
+  --green: #00ced1;
+  --green-dark: #0891b2;
+  --blue: #0a2342;
+  --rose: #00ced1;
+  --amber: #12345a;
+  font-family:
+    "IBM Plex Sans Arabic",
+    "IBM Plex Sans",
+    "Segoe UI",
+    Tahoma,
+    Arial,
+    sans-serif;
+  color: var(--ink);
+  background: #f8fafc;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+::selection {
+  color: var(--ink);
+  background: var(--green);
+}
