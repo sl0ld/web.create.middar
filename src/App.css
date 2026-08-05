@@ -1004,6 +1004,223 @@ button {
   box-shadow: var(--shadow);
 }
 
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  padding-top: 235px;
+  background: rgba(0, 80, 88, 0.72);
+  backdrop-filter: blur(2px);
+}
+
+.overlay-close {
+  position: absolute;
+  top: 236px;
+  right: 30px;
+  width: 38px;
+  height: 38px;
+  border: 1px solid #ffffff30;
+  border-radius: 8px;
+  color: var(--text);
+  background: #252628;
+}
+
+.salla-search-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(640px, calc(100vw - 44px));
+  min-height: 82px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: #242527;
+  box-shadow: var(--shadow);
+}
+
+.salla-search-box input {
+  width: 100%;
+  height: 42px;
+  border: 1px solid #ffffff30;
+  border-radius: 8px;
+  padding: 0 13px;
+  color: var(--text);
+  background: #303235;
+  outline: none;
+}
+
+.settings-drawer {
+  position: fixed;
+  inset: 80px auto auto 50%;
+  z-index: 75;
+  display: grid;
+  grid-template-columns: 280px minmax(420px, 700px);
+  width: min(980px, calc(100vw - 60px));
+  max-height: calc(100svh - 112px);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: #202123;
+  box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.55), var(--shadow);
+  transform: translateX(-50%);
+}
+
+.settings-drawer aside,
+.settings-drawer > section {
+  min-height: 620px;
+}
+
+.settings-drawer aside {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 16px 0;
+  border-right: 1px solid var(--line);
+  background: #292b2d;
+  overflow-y: auto;
+}
+
+.settings-drawer h2 {
+  margin: 0;
+  padding: 0 16px;
+  font-size: 18px;
+}
+
+.settings-drawer aside label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  margin: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 11px;
+  background: #202123;
+}
+
+.settings-drawer aside input {
+  width: 100%;
+  border: 0;
+  color: var(--text);
+  background: transparent;
+  outline: none;
+}
+
+.settings-drawer nav {
+  display: grid;
+}
+
+.settings-drawer nav button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  border: 0;
+  border-left: 3px solid transparent;
+  padding: 0 16px;
+  color: var(--text);
+  background: transparent;
+  text-align: left;
+  font-weight: 800;
+}
+
+.settings-drawer nav button.active {
+  border-left-color: var(--mint);
+  background: #ffffff10;
+}
+
+.settings-drawer nav span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  color: var(--mint);
+  background: #ffffff10;
+}
+
+.settings-drawer > section {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.drawer-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 50px;
+  border-bottom: 1px solid var(--line);
+}
+
+.drawer-head > div {
+  display: flex;
+  gap: 8px;
+}
+
+.drawer-head button,
+.settings-card-list button {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: #303235;
+}
+
+.drawer-head button {
+  width: 38px;
+}
+
+.settings-card-list {
+  display: grid;
+  gap: 10px;
+}
+
+.settings-card-list article,
+.settings-toggles {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.settings-card-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  align-items: center;
+  min-height: 76px;
+  padding: 12px 14px;
+}
+
+.settings-card-list p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.settings-card-list .danger {
+  color: #ff8b8b;
+  border-color: #ff8b8b66;
+}
+
+.settings-toggles {
+  display: grid;
+  padding: 10px 14px;
+}
+
+.settings-toggles label {
+  display: flex;
+  justify-content: space-between;
+  min-height: 44px;
+  align-items: center;
+  font-weight: 850;
+}
+
 .tool-popover h3,
 .tool-popover p,
 .tool-popover article p {

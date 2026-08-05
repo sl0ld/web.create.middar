@@ -587,7 +587,7 @@ function Header({
   setMenuOpen: (open: boolean) => void
 }) {
   const mainItems = sections.slice(0, 5)
-  const [activeTool, setActiveTool] = useState<'ask' | 'search' | 'apps' | 'notifications' | 'profile' | null>(null)
+  const [activeTool, setActiveTool] = useState<'ask' | 'search' | 'notifications' | 'settings' | 'profile' | null>(null)
   const closeTools = () => setActiveTool(null)
   const openTool = (tool: typeof activeTool) => {
     setMenuOpen(false)
@@ -643,10 +643,10 @@ function Header({
       <div className="header-tools">
         <button className={activeTool === 'ask' ? 'ask active' : 'ask'} aria-label="AI assistant" title="AI assistant" onClick={() => openTool('ask')}><Sparkles size={18} /></button>
         <button className={activeTool === 'search' ? 'tool active' : 'tool'} aria-label="Search" title="Search" onClick={() => openTool('search')}><Search size={20} /></button>
-        <button className={activeTool === 'apps' ? 'tool active' : 'tool'} aria-label="Apps menu" title="Apps menu" onClick={() => openTool('apps')}><Grid3X3 size={20} /></button>
-        <button className="tool" aria-label="Support inbox" title="Support inbox" onClick={() => { setScreen('support'); setActivePageKey(null); closeTools(); setMenuOpen(false) }}><MessageCircle size={20} /></button>
+        <button className={screen === 'apps' ? 'tool active' : 'tool'} aria-label="Apps menu" title="Apps menu" onClick={() => { setScreen('apps'); setActivePageKey('Apps & Logs:My apps'); closeTools(); setMenuOpen(false) }}><Grid3X3 size={20} /></button>
+        <button className={screen === 'support' ? 'tool active' : 'tool'} aria-label="Support inbox" title="Support inbox" onClick={() => { setScreen('support'); setActivePageKey('Support:Chat'); closeTools(); setMenuOpen(false) }}><MessageCircle size={20} /></button>
         <button className={activeTool === 'notifications' ? 'tool active' : 'tool'} aria-label="Notifications" title="Notifications" onClick={() => openTool('notifications')}><Bell size={20} /></button>
-        <button className={screen === 'settings' ? 'tool active' : 'tool'} aria-label="Settings" title="Settings" onClick={() => { setScreen('settings'); setActivePageKey(null); closeTools(); setMenuOpen(false) }}><Settings size={20} /></button>
+        <button className={activeTool === 'settings' ? 'tool active' : 'tool'} aria-label="Settings" title="Settings" onClick={() => openTool('settings')}><Settings size={20} /></button>
         <button className={activeTool === 'profile' ? 'profile active' : 'profile'} onClick={() => openTool('profile')}>
           <span>س</span>
           <b>سعيد</b>
@@ -672,7 +672,7 @@ function HeaderToolPanel({
   setActivePageKey,
   closeTools,
 }: {
-  activeTool: 'ask' | 'search' | 'apps' | 'notifications' | 'profile'
+  activeTool: 'ask' | 'search' | 'notifications' | 'settings' | 'profile'
   setScreen: (screen: Screen) => void
   setActivePageKey: (key: string | null) => void
   closeTools: () => void
@@ -685,35 +685,12 @@ function HeaderToolPanel({
 
   if (activeTool === 'search') {
     return (
-      <section className="tool-popover search-popover">
-        <h3>Search</h3>
-        <label>
-          <Search size={17} />
-          <input autoFocus placeholder="Search orders, products, customers..." />
-        </label>
-        <div className="quick-results">
-          <button onClick={() => go('orders', 'Orders:All orders')}>Orders</button>
-          <button onClick={() => go('products', 'Products:All products')}>Products</button>
-          <button onClick={() => go('customers', 'Customers:All customers')}>Customers</button>
+      <section className="search-overlay">
+        <button className="overlay-close" onClick={closeTools}>close</button>
+        <div className="salla-search-box">
+          <Search size={22} />
+          <input autoFocus placeholder="Search pages or settings" />
         </div>
-      </section>
-    )
-  }
-
-  if (activeTool === 'apps') {
-    return (
-      <section className="tool-popover apps-popover">
-        <h3>Apps and shortcuts</h3>
-        {[
-          ['App Store', 'apps', 'Apps & Logs:App Store'],
-          ['My apps', 'apps', 'Apps & Logs:My apps'],
-          ['Theme Marketplace', 'store', 'Online Store:Theme Marketplace'],
-          ['Reports', 'reports', 'Reports:Store performance'],
-          ['Shipping', 'shipping', 'Shipping:Shipping & delivery'],
-          ['Payments', 'payments', 'Payments:Payment methods'],
-        ].map(([label, screenName, key]) => (
-          <button key={label} onClick={() => go(screenName as DashboardScreen, key)}>{label}</button>
-        ))}
       </section>
     )
   }
@@ -733,12 +710,16 @@ function HeaderToolPanel({
     return (
       <section className="tool-popover profile-popover">
         <div className="profile-summary"><span>Ø³</span><div><b>Ø³Ø¹ÙŠØ¯</b><small>Basic plan</small></div></div>
-        <button onClick={() => go('settings')}>Account settings</button>
-        <button onClick={() => go('settings', 'Settings:Billing')}>Billing and plan</button>
-        <button onClick={() => go('support')}>Support center</button>
-        <button onClick={() => go('summary')}>Back to store summary</button>
+        <button onClick={() => go('settings', 'Settings:Billing')}>Store plan & subscriptions</button>
+        <button>Invite & earn</button>
+        <button>Give feedback</button>
+        <button onClick={() => go('settings', 'Settings:Notifications')}>Notification preferences</button>
       </section>
     )
+  }
+
+  if (activeTool === 'settings') {
+    return <SettingsDrawer closeTools={closeTools} />
   }
 
   return (
@@ -750,6 +731,70 @@ function HeaderToolPanel({
         <button onClick={() => go('marketing', 'Marketing:Salla Ads')}>Marketing ideas</button>
         <button onClick={() => go('products', 'Products:All products')}>Product tasks</button>
       </div>
+    </section>
+  )
+}
+
+function SettingsDrawer({ closeTools }: { closeTools: () => void }) {
+  const settingsItems = [
+    'Your profile',
+    'General',
+    'Store plan',
+    'Manage stores',
+    'Balance & billing',
+    'Payments',
+    'Domain',
+    'Checkout',
+    'Taxes',
+    'Sales channels',
+    'Markets',
+    'Products',
+    'Orders',
+    'Shipping & delivery',
+    'Customers',
+    'Marketing',
+    'Customer Wallet',
+    'Blog',
+    'Reviews',
+    'Notifications',
+    'Installed apps',
+  ]
+
+  return (
+    <section className="settings-drawer">
+      <aside>
+        <h2>Settings</h2>
+        <label><Search size={17} /><input placeholder="Search settings" /></label>
+        <nav>
+          {settingsItems.map((item, index) => (
+            <button className={index === 0 ? 'active' : ''} key={item}>
+              <span>{item.slice(0, 1)}</span>
+              {item}
+            </button>
+          ))}
+        </nav>
+      </aside>
+      <section>
+        <div className="drawer-head">
+          <h2>Your profile</h2>
+          <div>
+            <button aria-label="Expand settings"><Grid3X3 size={18} /></button>
+            <button aria-label="Close settings" onClick={closeTools}>x</button>
+          </div>
+        </div>
+        <div className="settings-card-list">
+          <article><b>Edit profile</b><p>Update your personal information and account details.</p><ChevronDown size={18} /></article>
+          <article><b>Registered devices</b><p>Review and manage devices signed in to your account.</p><ChevronDown size={18} /></article>
+          <article><b>Quick access</b><p>Manage passkeys for fast, secure sign-in across all your devices.</p><ChevronDown size={18} /></article>
+          <article><b>Password</b><p>Change your account password.</p><button>Change</button></article>
+          <article><b>Two-factor authentication</b><p>Protect your account with an extra verification step.</p><span /></article>
+          <article><b>Sign out of all devices</b><p>Sign out of all other devices signed in to your account.</p><button className="danger">Sign out</button></article>
+        </div>
+        <div className="settings-toggles">
+          <label>English (Beta)<input type="checkbox" defaultChecked /></label>
+          <label>Dark mode<input type="checkbox" defaultChecked /></label>
+        </div>
+      </section>
     </section>
   )
 }
