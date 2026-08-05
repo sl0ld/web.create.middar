@@ -929,6 +929,7 @@ button {
 }
 
 .header-tools {
+  position: relative;
   justify-content: flex-end;
   gap: 5px;
 }
@@ -948,7 +949,9 @@ button {
   background: linear-gradient(135deg, #7cf2d6, #ffd27b);
 }
 
-.tool:hover {
+.tool:hover,
+.tool.active,
+.profile.active {
   background: #2b2d30;
 }
 
@@ -983,6 +986,110 @@ button {
   border: 1px solid var(--mint);
   border-radius: 999px;
   color: #fff;
+}
+
+.tool-popover {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  z-index: 55;
+  display: grid;
+  gap: 12px;
+  width: min(360px, calc(100vw - 28px));
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: #252628;
+  box-shadow: var(--shadow);
+}
+
+.tool-popover h3,
+.tool-popover p,
+.tool-popover article p {
+  margin: 0;
+}
+
+.tool-popover h3 {
+  color: var(--mint);
+  font-size: 16px;
+}
+
+.tool-popover p,
+.tool-popover article p,
+.profile-summary small {
+  color: var(--muted);
+}
+
+.search-popover label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 12px;
+  background: #202123;
+}
+
+.search-popover input {
+  width: 100%;
+  border: 0;
+  color: var(--text);
+  background: transparent;
+  outline: none;
+}
+
+.quick-results,
+.apps-popover {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.quick-results {
+  display: grid;
+  gap: 8px;
+}
+
+.tool-popover button {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: var(--text);
+  background: #2b2d30;
+  font-weight: 800;
+  text-align: left;
+}
+
+.tool-popover button:hover {
+  border-color: var(--mint);
+  color: var(--mint);
+}
+
+.notice-popover article {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: #202123;
+}
+
+.profile-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.profile-summary span {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #ffffff18;
 }
 
 .sub-nav {
@@ -1164,6 +1271,7 @@ button {
 .carrier-card,
 .verify-card,
 .payment-grid article,
+.settings-grid article,
 .apps-grid article,
 .apps-hero,
 .date-card {
@@ -1762,6 +1870,7 @@ button {
 .theme-grid,
 .carrier-grid,
 .payment-grid,
+.settings-grid,
 .apps-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1769,9 +1878,42 @@ button {
 }
 
 .theme-grid article,
+.settings-grid article,
 .apps-grid article,
 .carrier-card {
   padding: 14px;
+}
+
+.settings-grid article {
+  display: grid;
+  gap: 10px;
+  min-height: 190px;
+}
+
+.settings-grid svg {
+  color: var(--mint);
+}
+
+.settings-grid h3,
+.settings-grid p {
+  margin: 0;
+}
+
+.settings-grid p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.settings-grid button {
+  align-self: end;
+  justify-self: start;
+  min-height: 36px;
+  border: 1px solid var(--mint);
+  border-radius: 8px;
+  padding: 0 14px;
+  color: var(--mint);
+  background: transparent;
+  font-weight: 850;
 }
 
 .theme-art {

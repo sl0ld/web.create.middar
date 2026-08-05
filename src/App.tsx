@@ -44,6 +44,7 @@ type DashboardScreen =
   | 'payments'
   | 'apps'
   | 'logs'
+  | 'settings'
 
 type Screen = 'landing' | 'register' | 'verification' | 'onboarding' | DashboardScreen
 
@@ -69,6 +70,7 @@ const sections: Section[] = [
   { id: 'payments', label: 'Payments', icon: CreditCard, tabs: ['Payment methods', 'Wallet', 'Payment restrictions', 'Tax settings', 'Transactions', 'Store Verification'] },
   { id: 'apps', label: 'Apps & Tools', icon: AppWindow, tabs: ['App Store', 'My apps', 'Settings'] },
   { id: 'logs', label: 'Logs', icon: FileClock, tabs: ['SMS log', 'Activity history', 'Export log'] },
+  { id: 'settings', label: 'Settings', icon: Settings, tabs: ['Store settings', 'Account', 'Billing', 'Notifications', 'Security'] },
 ]
 
 const menuGroups: Array<[string, string[]]> = [
@@ -213,6 +215,7 @@ function App() {
             {screen === 'payments' && <Payments />}
             {screen === 'apps' && <Apps />}
             {screen === 'logs' && <Logs />}
+            {screen === 'settings' && <SettingsPage />}
           </>
         )}
       </section>
@@ -584,6 +587,13 @@ function Header({
   setMenuOpen: (open: boolean) => void
 }) {
   const mainItems = sections.slice(0, 5)
+  const [activeTool, setActiveTool] = useState<'ask' | 'search' | 'apps' | 'notifications' | 'profile' | null>(null)
+  const closeTools = () => setActiveTool(null)
+  const openTool = (tool: typeof activeTool) => {
+    setMenuOpen(false)
+    setActiveTool((current) => current === tool ? null : tool)
+  }
+
   return (
     <header className="main-header">
       <button
@@ -591,13 +601,14 @@ function Header({
         onClick={() => {
           setScreen('landing')
           setActivePageKey(null)
+          closeTools()
           setMenuOpen(false)
         }}
       >
         <span className="brand-logo">مدار</span>
       </button>
       <nav className="main-nav">
-        <button className={menuOpen ? 'active nav-button' : 'nav-button'} onClick={() => setMenuOpen(!menuOpen)}>
+        <button className={menuOpen ? 'active nav-button' : 'nav-button'} onClick={() => { closeTools(); setMenuOpen(!menuOpen) }}>
           <Menu size={18} /> All
         </button>
         {mainItems.map((item) => {
@@ -609,6 +620,7 @@ function Header({
               onClick={() => {
                 setScreen(item.id)
                 setActivePageKey(null)
+                closeTools()
                 setMenuOpen(false)
               }}
             >
@@ -621,6 +633,7 @@ function Header({
           onClick={() => {
             setScreen('reports')
             setActivePageKey(null)
+            closeTools()
             setMenuOpen(false)
           }}
         >
@@ -628,20 +641,116 @@ function Header({
         </button>
       </nav>
       <div className="header-tools">
-        <button className="ask"><Sparkles size={18} /></button>
-        <button className="tool"><Search size={20} /></button>
-        <button className="tool"><Grid3X3 size={20} /></button>
-        <button className="tool" onClick={() => { setScreen('support'); setActivePageKey(null) }}><MessageCircle size={20} /></button>
-        <button className="tool"><Bell size={20} /></button>
-        <button className="tool"><Settings size={20} /></button>
-        <button className="profile">
+        <button className={activeTool === 'ask' ? 'ask active' : 'ask'} aria-label="AI assistant" title="AI assistant" onClick={() => openTool('ask')}><Sparkles size={18} /></button>
+        <button className={activeTool === 'search' ? 'tool active' : 'tool'} aria-label="Search" title="Search" onClick={() => openTool('search')}><Search size={20} /></button>
+        <button className={activeTool === 'apps' ? 'tool active' : 'tool'} aria-label="Apps menu" title="Apps menu" onClick={() => openTool('apps')}><Grid3X3 size={20} /></button>
+        <button className="tool" aria-label="Support inbox" title="Support inbox" onClick={() => { setScreen('support'); setActivePageKey(null); closeTools(); setMenuOpen(false) }}><MessageCircle size={20} /></button>
+        <button className={activeTool === 'notifications' ? 'tool active' : 'tool'} aria-label="Notifications" title="Notifications" onClick={() => openTool('notifications')}><Bell size={20} /></button>
+        <button className={screen === 'settings' ? 'tool active' : 'tool'} aria-label="Settings" title="Settings" onClick={() => { setScreen('settings'); setActivePageKey(null); closeTools(); setMenuOpen(false) }}><Settings size={20} /></button>
+        <button className={activeTool === 'profile' ? 'profile active' : 'profile'} onClick={() => openTool('profile')}>
           <span>س</span>
           <b>سعيد</b>
           <small>Basic</small>
           <ChevronDown size={17} />
         </button>
+        {activeTool && (
+          <HeaderToolPanel
+            activeTool={activeTool}
+            setScreen={setScreen}
+            setActivePageKey={setActivePageKey}
+            closeTools={closeTools}
+          />
+        )}
       </div>
     </header>
+  )
+}
+
+function HeaderToolPanel({
+  activeTool,
+  setScreen,
+  setActivePageKey,
+  closeTools,
+}: {
+  activeTool: 'ask' | 'search' | 'apps' | 'notifications' | 'profile'
+  setScreen: (screen: Screen) => void
+  setActivePageKey: (key: string | null) => void
+  closeTools: () => void
+}) {
+  const go = (screen: DashboardScreen, pageKey?: string) => {
+    setScreen(screen)
+    setActivePageKey(pageKey ?? null)
+    closeTools()
+  }
+
+  if (activeTool === 'search') {
+    return (
+      <section className="tool-popover search-popover">
+        <h3>Search</h3>
+        <label>
+          <Search size={17} />
+          <input autoFocus placeholder="Search orders, products, customers..." />
+        </label>
+        <div className="quick-results">
+          <button onClick={() => go('orders', 'Orders:All orders')}>Orders</button>
+          <button onClick={() => go('products', 'Products:All products')}>Products</button>
+          <button onClick={() => go('customers', 'Customers:All customers')}>Customers</button>
+        </div>
+      </section>
+    )
+  }
+
+  if (activeTool === 'apps') {
+    return (
+      <section className="tool-popover apps-popover">
+        <h3>Apps and shortcuts</h3>
+        {[
+          ['App Store', 'apps', 'Apps & Logs:App Store'],
+          ['My apps', 'apps', 'Apps & Logs:My apps'],
+          ['Theme Marketplace', 'store', 'Online Store:Theme Marketplace'],
+          ['Reports', 'reports', 'Reports:Store performance'],
+          ['Shipping', 'shipping', 'Shipping:Shipping & delivery'],
+          ['Payments', 'payments', 'Payments:Payment methods'],
+        ].map(([label, screenName, key]) => (
+          <button key={label} onClick={() => go(screenName as DashboardScreen, key)}>{label}</button>
+        ))}
+      </section>
+    )
+  }
+
+  if (activeTool === 'notifications') {
+    return (
+      <section className="tool-popover notice-popover">
+        <h3>Notifications</h3>
+        <article><b>Email verification</b><p>Activate your email to unlock all dashboard features.</p></article>
+        <article><b>Store setup</b><p>6 steps remaining before launch.</p></article>
+        <button onClick={() => go('settings')}>Notification settings</button>
+      </section>
+    )
+  }
+
+  if (activeTool === 'profile') {
+    return (
+      <section className="tool-popover profile-popover">
+        <div className="profile-summary"><span>Ø³</span><div><b>Ø³Ø¹ÙŠØ¯</b><small>Basic plan</small></div></div>
+        <button onClick={() => go('settings')}>Account settings</button>
+        <button onClick={() => go('settings', 'Settings:Billing')}>Billing and plan</button>
+        <button onClick={() => go('support')}>Support center</button>
+        <button onClick={() => go('summary')}>Back to store summary</button>
+      </section>
+    )
+  }
+
+  return (
+    <section className="tool-popover ask-popover">
+      <h3>AI assistant</h3>
+      <p>Ask for store setup ideas, dashboard guidance, or launch checklist help.</p>
+      <div className="quick-results">
+        <button onClick={() => go('summary')}>Setup checklist</button>
+        <button onClick={() => go('marketing', 'Marketing:Salla Ads')}>Marketing ideas</button>
+        <button onClick={() => go('products', 'Products:All products')}>Product tasks</button>
+      </div>
+    </section>
   )
 }
 
@@ -1020,6 +1129,30 @@ function Logs() {
         <Table rows={[['SMS log', 'No messages yet', 'Basic'], ['Activity history', 'Available on Plus', 'Locked'], ['Export log', 'No exports yet', 'Empty']]} />
       </Panel>
     </div>
+  )
+}
+
+function SettingsPage() {
+  return (
+    <PageShell crumb="Settings" title="Store settings" aside={<FilterList title="Settings" items={['Store settings', 'Account', 'Billing', 'Notifications', 'Security']} />}>
+      <div className="settings-grid">
+        {[
+          ['Store profile', 'Store name, logo, description, and contact details.'],
+          ['Account settings', 'Owner information, email, phone, and language preferences.'],
+          ['Billing and plan', 'Current Basic plan, upgrade options, and invoices preview.'],
+          ['Notifications', 'Email, dashboard, and customer message alerts.'],
+          ['Security', 'Password, active sessions, and verification status.'],
+          ['Team access', 'Roles, permissions, and staff invitations.'],
+        ].map(([title, body]) => (
+          <article key={title}>
+            <Settings size={22} />
+            <h3>{title}</h3>
+            <p>{body}</p>
+            <button>Open</button>
+          </article>
+        ))}
+      </div>
+    </PageShell>
   )
 }
 
