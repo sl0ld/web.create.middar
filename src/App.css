@@ -1783,6 +1783,7 @@ button {
 .side-list button {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   width: 100%;
   min-height: 46px;
   border: 0;
@@ -1791,6 +1792,11 @@ button {
   color: var(--muted);
   background: transparent;
   text-align: left;
+}
+
+.side-list button:hover {
+  color: var(--text);
+  background: #ffffff0f;
 }
 
 .side-list button.active {

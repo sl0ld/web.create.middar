@@ -200,7 +200,7 @@ function App() {
       {menuOpen && <MegaMenu setScreen={setScreen} setActivePageKey={setActivePageKey} setMenuOpen={setMenuOpen} />}
       <SubNav active={active} />
       <section className="workspace">
-        {activePageKey ? <DynamicPage pageKey={activePageKey} /> : (
+        {activePageKey ? <DynamicPage pageKey={activePageKey} setScreen={setScreen} setActivePageKey={setActivePageKey} /> : (
           <>
             {screen === 'summary' && <StoreSummary />}
             {screen === 'orders' && <Orders />}
@@ -916,17 +916,29 @@ function Checklist() {
   )
 }
 
-function DynamicPage({ pageKey }: { pageKey: string }) {
+function DynamicPage({
+  pageKey,
+  setScreen,
+  setActivePageKey,
+}: {
+  pageKey: string
+  setScreen: (screen: Screen) => void
+  setActivePageKey: (key: string | null) => void
+}) {
   const [group, link] = pageKey.split(':')
   const route = routeForMenuLink(group, link)
   const groupLinks = menuGroups.find(([name]) => name === group)?.[1] ?? [link]
   const detail = specialPageDetails[pageKey]
   const asideTitle = group === 'Apps & Logs' ? 'Apps & Logs' : group
   const pageTitle = link || sections.find((section) => section.id === route)?.label || 'Home'
+  const openSidePage = (item: string) => {
+    setScreen(routeForMenuLink(group, item))
+    setActivePageKey(`${group}:${item}`)
+  }
 
   if (detail) {
     return (
-      <PageShell crumb={group} title={pageTitle} aside={<FilterList title={asideTitle} items={groupLinks} activeItem={pageTitle} />}>
+      <PageShell crumb={group} title={pageTitle} aside={<FilterList title={asideTitle} items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
         <LockedFeature title={pageTitle} badge={detail.badge} body={detail.title} description={detail.body} />
         {detail.locked ? <UnavailablePanel /> : <PagePreview title={detail.title} group={group} link={pageTitle} />}
       </PageShell>
@@ -935,7 +947,7 @@ function DynamicPage({ pageKey }: { pageKey: string }) {
 
   if (route === 'orders') {
     return (
-      <PageShell crumb="Orders" title={pageTitle} aside={<FilterList title="Orders" items={groupLinks} activeItem={pageTitle} />}>
+      <PageShell crumb="Orders" title={pageTitle} aside={<FilterList title="Orders" items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
         {pageTitle === 'All orders' ? <SplitEmpty title="No order selected" action="Filter" /> : <PagePreview title={pageTitle} group={group} link={pageTitle} />}
       </PageShell>
     )
@@ -943,7 +955,7 @@ function DynamicPage({ pageKey }: { pageKey: string }) {
 
   if (route === 'products') {
     return (
-      <PageShell crumb="Products" title={pageTitle} aside={<FilterList title="Products" items={groupLinks} activeItem={pageTitle} />}>
+      <PageShell crumb="Products" title={pageTitle} aside={<FilterList title="Products" items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
         {pageTitle === 'All products' ? <SplitEmpty title="No products selected" action="Filter" /> : <PagePreview title={pageTitle} group={group} link={pageTitle} />}
       </PageShell>
     )
@@ -951,7 +963,7 @@ function DynamicPage({ pageKey }: { pageKey: string }) {
 
   if (route === 'marketing') {
     return (
-      <PageShell crumb="Marketing" title={pageTitle} aside={<FilterList title="Marketing" items={groupLinks} activeItem={pageTitle} />}>
+      <PageShell crumb="Marketing" title={pageTitle} aside={<FilterList title="Marketing" items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
         <PagePreview title={pageTitle} group={group} link={pageTitle} />
       </PageShell>
     )
@@ -959,7 +971,7 @@ function DynamicPage({ pageKey }: { pageKey: string }) {
 
   if (route === 'store') {
     return (
-      <PageShell crumb={group} title={pageTitle} aside={<FilterList title={group} items={groupLinks} activeItem={pageTitle} />}>
+      <PageShell crumb={group} title={pageTitle} aside={<FilterList title={group} items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
         {pageTitle === 'Store design' || pageTitle === 'Theme Marketplace' ? (
           <FeatureHero title={pageTitle} badge="Available on your plan" body="Customize the storefront experience, pages, channels, and launch-ready presentation." action="Open editor" />
         ) : (
@@ -971,7 +983,7 @@ function DynamicPage({ pageKey }: { pageKey: string }) {
 
   if (route === 'reports') {
     return (
-      <PageShell crumb="Reports" title={pageTitle} aside={<FilterList title="Reports" items={groupLinks} activeItem={pageTitle} />}>
+      <PageShell crumb="Reports" title={pageTitle} aside={<FilterList title="Reports" items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
         <div className="date-card">Jul 2026, 28 - Aug 2026, 04 <button>...</button></div>
         <MetricGrid metrics={[['Gross sales', ''], ['Orders', ''], ['Conversion', ''], ['Visits', '']]} skeleton />
       </PageShell>
@@ -979,7 +991,7 @@ function DynamicPage({ pageKey }: { pageKey: string }) {
   }
 
   return (
-    <PageShell crumb={group} title={pageTitle} aside={<FilterList title={asideTitle} items={groupLinks} activeItem={pageTitle} />}>
+    <PageShell crumb={group} title={pageTitle} aside={<FilterList title={asideTitle} items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
       <PagePreview title={pageTitle} group={group} link={pageTitle} />
     </PageShell>
   )
@@ -1213,11 +1225,32 @@ function PageShell({ crumb, title, aside, children }: { crumb: string; title: st
   )
 }
 
-function FilterList({ title, items, footer, activeItem }: { title: string; items: string[]; footer?: string; activeItem?: string }) {
+function FilterList({
+  title,
+  items,
+  footer,
+  activeItem,
+  onItemClick,
+}: {
+  title: string
+  items: string[]
+  footer?: string
+  activeItem?: string
+  onItemClick?: (item: string) => void
+}) {
   return (
     <nav className="side-list">
       <h3>{title}</h3>
-      {items.map((item, index) => <button className={(activeItem ? item === activeItem : index === 0) ? 'active' : ''} key={item}>{item}{index < 4 && <small>0</small>}</button>)}
+      {items.map((item, index) => (
+        <button
+          aria-label={item}
+          className={(activeItem ? item === activeItem : index === 0) ? 'active' : ''}
+          key={item}
+          onClick={() => onItemClick?.(item)}
+        >
+          {item}{index < 4 && <small>0</small>}
+        </button>
+      ))}
       {footer && <button className="manage">{footer}</button>}
     </nav>
   )
