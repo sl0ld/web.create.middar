@@ -1885,13 +1885,58 @@ button {
   padding: 16px;
 }
 
+.filter-details {
+  width: fit-content;
+}
+
 .filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   min-height: 38px;
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 0 14px;
   color: var(--text);
   background: transparent;
+  list-style: none;
+  cursor: pointer;
+}
+
+.filter::-webkit-details-marker {
+  display: none;
+}
+
+.filter-details[open] .filter,
+.filter:hover {
+  border-color: var(--mint);
+  color: var(--mint);
+}
+
+.filter-panel {
+  display: grid;
+  gap: 8px;
+  max-width: 260px;
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #202123;
+}
+
+.filter-panel span {
+  color: var(--muted);
+}
+
+.filter-panel button {
+  justify-self: start;
+  min-height: 32px;
+  border: 1px solid var(--mint);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: var(--mint);
+  background: transparent;
+  font-weight: 850;
 }
 
 .empty-lines {
@@ -1936,7 +1981,7 @@ button {
   font-weight: 850;
 }
 
-.channel-tabs button:first-child {
+.channel-tabs button.active {
   color: #113330;
   background: var(--mint);
 }

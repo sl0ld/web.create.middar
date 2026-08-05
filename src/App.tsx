@@ -877,7 +877,17 @@ function SubNav({
           </button>
         ))}
       </div>
-      {active.action && <button className="mint-action"><Plus size={18} /> {active.action}</button>}
+      {active.action && (
+        <button
+          className="mint-action"
+          onClick={() => {
+            setScreen(active.id)
+            setActivePageKey(`${group}:${active.action}`)
+          }}
+        >
+          <Plus size={18} /> {active.action}
+        </button>
+      )}
     </nav>
   )
 }
@@ -1087,31 +1097,38 @@ function UnavailablePanel() {
 }
 
 function Orders() {
+  const [activeStatus, setActiveStatus] = useState(orderStatuses[0])
+  const emptyTitle = activeStatus === orderStatuses[0] ? 'No order selected' : `No ${activeStatus} order selected`
+
   return (
-    <PageShell crumb="Orders" title="All orders" aside={<FilterList title="All orders" items={orderStatuses} />}>
+    <PageShell crumb="Orders" title="All orders" aside={<FilterList title="All orders" items={orderStatuses} activeItem={activeStatus} onItemClick={setActiveStatus} />}>
       <LockedFeature title="Order Editing" body="Manage your orders, with a button press" />
-      <SplitEmpty title="No order selected" action="Filter" />
+      <SplitEmpty title={emptyTitle} action="Filter" context={activeStatus} />
     </PageShell>
   )
 }
 
 function Products() {
+  const [activeFilter, setActiveFilter] = useState(productFilters[0])
+
   return (
-    <PageShell crumb="Products" title="All products" aside={<FilterList title="Product filters" items={productFilters} />}>
-      <SplitEmpty title="No products selected" action="Filter" />
+    <PageShell crumb="Products" title="All products" aside={<FilterList title="Product filters" items={productFilters} activeItem={activeFilter} onItemClick={setActiveFilter} />}>
+      <SplitEmpty title={`No ${activeFilter.toLowerCase()} selected`} action="Filter" context={activeFilter} />
     </PageShell>
   )
 }
 
 function Marketing() {
+  const [activeChannel, setActiveChannel] = useState('Snapchat')
+
   return (
     <div className="page-stack">
       <LockedFeature title="Salla Ads" body="Use Salla Ads to reach more customers and increase your store sales." />
-      <div className="channel-tabs">{['Snapchat', 'TikTok', 'Google', 'Meta', 'YouTube'].map((item) => <button key={item}>{item}</button>)}</div>
+      <SelectableTabs items={['Snapchat', 'TikTok', 'Google', 'Meta', 'YouTube']} activeItem={activeChannel} onChange={setActiveChannel} />
       <MetricGrid metrics={[['Impressions', '0'], ['Avg. CPC', '0 SAR'], ['Clicks', '0'], ['Spent', '0 SAR']]} />
       <div className="two-panels">
-        <Panel title="Store credits"><b className="big">0</b><p>Low balance</p><button className="outline">Top up</button></Panel>
-        <Panel title="Latest Campaigns"><Empty title="No ad reports yet!" body="New reports will appear here when ads are published." /></Panel>
+        <Panel title={`${activeChannel} credits`}><b className="big">0</b><p>Low balance</p><button className="outline">Top up</button></Panel>
+        <Panel title={`Latest ${activeChannel} Campaigns`}><Empty title="No ad reports yet!" body={`New ${activeChannel} reports will appear here when ads are published.`} /></Panel>
       </div>
     </div>
   )
@@ -1136,10 +1153,13 @@ function StoreDesign() {
 }
 
 function Customers() {
+  const customerGroups = ['All customers', 'Empty groups', 'VIP customers', 'New customers']
+  const [activeCustomerGroup, setActiveCustomerGroup] = useState(customerGroups[0])
+
   return (
-    <PageShell crumb="Customers" title="All customers" aside={<FilterList title="Customer groups" items={['All customers', 'Empty groups', 'VIP customers', 'New customers']} />}>
+    <PageShell crumb="Customers" title="All customers" aside={<FilterList title="Customer groups" items={customerGroups} activeItem={activeCustomerGroup} onItemClick={setActiveCustomerGroup} />}>
       <LockedFeature title="Add New Customer" body="Effective communication with your customers" />
-      <SplitEmpty title="No customer selected" action="Filter" />
+      <SplitEmpty title={`No ${activeCustomerGroup.toLowerCase()} selected`} action="Filter" context={activeCustomerGroup} />
     </PageShell>
   )
 }
@@ -1156,27 +1176,37 @@ function Staff() {
 }
 
 function Reports() {
+  const [activeReport, setActiveReport] = useState(reportMenu[0])
+
   return (
-    <PageShell crumb="Reports" title="Store performance" aside={<FilterList title="Reports" items={reportMenu} footer="Manage reports" />}>
+    <PageShell crumb="Reports" title="Store performance" aside={<FilterList title="Reports" items={reportMenu} footer="Manage reports" activeItem={activeReport} onItemClick={setActiveReport} />}>
       <div className="date-card">Jul 2026, 28 - Aug 2026, 04 <button>...</button></div>
-      <MetricGrid metrics={[['Gross sales', ''], ['Net sales', ''], ['Total costs', ''], ['Net profit', '']]} skeleton />
+      <MetricGrid metrics={[[`${activeReport} gross`, ''], ['Net sales', ''], ['Total costs', ''], ['Net profit', '']]} skeleton />
     </PageShell>
   )
 }
 
 function Support() {
+  const supportItems = ['Reviews', 'Questions', 'Reported reviews', 'Tickets', 'Complaints']
+  const [activeSupport, setActiveSupport] = useState(supportItems[0])
+
   return (
-    <PageShell crumb="Support" title="Reviews" aside={<FilterList title="Inbox" items={['Reviews', 'Questions', 'Reported reviews', 'Tickets', 'Complaints']} />}>
-      <SplitEmpty title="No review selected" action="Filter" />
+    <PageShell crumb="Support" title="Reviews" aside={<FilterList title="Inbox" items={supportItems} activeItem={activeSupport} onItemClick={setActiveSupport} />}>
+      <SplitEmpty title={`No ${activeSupport.toLowerCase()} selected`} action="Filter" context={activeSupport} />
     </PageShell>
   )
 }
 
 function Shipping() {
+  const [activeShipping, setActiveShipping] = useState('All carriers')
+
   return (
     <div className="page-stack">
       <FeatureHero title="Manage shipping" badge="Available on your plan" body="A fleet of trusted local and global couriers ready to deliver your orders." action="App Store" />
-      <div className="channel-tabs">{['All carriers', 'Standard shipping', 'Express shipping', 'Economy shipping', 'International shipping', 'Freight shipping'].map((item) => <button key={item}>{item}</button>)}</div>
+      <SelectableTabs items={['All carriers', 'Standard shipping', 'Express shipping', 'Economy shipping', 'International shipping', 'Freight shipping']} activeItem={activeShipping} onChange={setActiveShipping} />
+      <Panel title={activeShipping}>
+        <p>Showing carriers and setup states for {activeShipping.toLowerCase()}.</p>
+      </Panel>
       <section className="carrier-grid">
         {carriers.map((carrier) => <Carrier key={carrier} name={carrier} />)}
       </section>
@@ -1230,8 +1260,11 @@ function Logs() {
 }
 
 function SettingsPage() {
+  const settingsItems = ['Store settings', 'Account', 'Billing', 'Notifications', 'Security']
+  const [activeSetting, setActiveSetting] = useState(settingsItems[0])
+
   return (
-    <PageShell crumb="Settings" title="Store settings" aside={<FilterList title="Settings" items={['Store settings', 'Account', 'Billing', 'Notifications', 'Security']} />}>
+    <PageShell crumb="Settings" title="Store settings" aside={<FilterList title="Settings" items={settingsItems} activeItem={activeSetting} onItemClick={setActiveSetting} />}>
       <div className="settings-grid">
         {[
           ['Store profile', 'Store name, logo, description, and contact details.'],
@@ -1245,11 +1278,23 @@ function SettingsPage() {
             <Settings size={22} />
             <h3>{title}</h3>
             <p>{body}</p>
-            <button>Open</button>
+            <button onClick={() => setActiveSetting(title.includes('Billing') ? 'Billing' : title.includes('Notifications') ? 'Notifications' : title.includes('Security') ? 'Security' : 'Account')}>Open</button>
           </article>
         ))}
       </div>
     </PageShell>
+  )
+}
+
+function SelectableTabs({ items, activeItem, onChange }: { items: string[]; activeItem: string; onChange: (item: string) => void }) {
+  return (
+    <div className="channel-tabs">
+      {items.map((item) => (
+        <button className={activeItem === item ? 'active' : ''} key={item} onClick={() => onChange(item)}>
+          {item}
+        </button>
+      ))}
+    </div>
   )
 }
 
@@ -1326,11 +1371,18 @@ function FeatureHero({ title, badge, body, action }: { title: string; badge: str
   )
 }
 
-function SplitEmpty({ title, action }: { title: string; action: string }) {
+function SplitEmpty({ title, action, context = 'All' }: { title: string; action: string; context?: string }) {
   return (
     <div className="split-empty">
       <section>
-        <button className="filter"><Filter size={17} /> {action}</button>
+        <details className="filter-details">
+          <summary className="filter"><Filter size={17} /> {action}</summary>
+          <div className="filter-panel">
+            <b>Active view</b>
+            <span>{context}</span>
+            <button>Apply</button>
+          </div>
+        </details>
         <div className="empty-lines"><i /><i /><i /><i /></div>
       </section>
       <section><Empty title={title} body="Select an item from the list to see details here." /></section>
