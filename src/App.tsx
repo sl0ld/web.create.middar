@@ -76,9 +76,9 @@ const sections: Section[] = [
 const menuGroups: Array<[string, string[]]> = [
   ['Orders', ['All orders', 'Order settings', 'Order statuses', 'Bulk status update', 'Auto assignment', 'Invoice settings', 'Bookings', 'Custom fields', 'Cart options', 'Export templates', 'Auto tags']],
   ['Products', ['All products', 'Product settings', 'Categories & options', 'Product editor', 'Inventory management', 'Inventory transfer', 'Pre-order campaigns', 'Product restrictions', 'Inventory audit', 'Import from platforms', 'Import & export', 'Export templates', 'Warehouses & branches', 'Retail stores']],
-  ['Marketing', ['Salla Ads', 'Pixels & feeds', 'Abandoned carts', 'Coupons', 'Cashback offers', 'Influencers', 'Special offers', 'Campaigns', 'Cart offers', 'Marketing calendar', 'Customer wallet', 'Affiliate marketing', 'SEO', 'Loyalty program', 'Quick checkout', 'Gifting', 'Reorder Reminder']],
+  ['Marketing', ['إعلانات مدار', 'Pixels & feeds', 'Abandoned carts', 'Coupons', 'Cashback offers', 'Influencers', 'Special offers', 'Campaigns', 'Cart offers', 'Marketing calendar', 'Customer wallet', 'Affiliate marketing', 'SEO', 'Loyalty program', 'Quick checkout', 'Gifting', 'Reorder Reminder']],
   ['Online Store', ['Store design', 'Theme Marketplace', 'Domain', 'Information pages', 'Custom URLs']],
-  ['Sales Channels', ['Salla Point', 'Mobile app', 'Landing pages']],
+  ['Sales Channels', ['نقطة مدار', 'Mobile app', 'Landing pages']],
   ['Customers', ['All customers', 'Settings', 'Customer groups', 'Import customers', 'Custom fields']],
   ['Staff', ['Staff', 'Roles & permissions', 'Employees targets']],
   ['Reports', ['Store performance', 'Smart analytics', 'Manage reports']],
@@ -90,6 +90,20 @@ const menuGroups: Array<[string, string[]]> = [
 
 const orderStatuses = ['All orders', 'محذوف', 'بإنتظار الدفع', 'بإنتظار المراجعة', 'قيد التنفيذ', 'تم التنفيذ', 'جاري التوصيل', 'تم التوصيل', 'تم الشحن', 'ملغي', 'مسترجع', 'قيد الإسترجاع', 'طلب عرض سعر', 'مكتمل']
 const productFilters = ['Unpriced Products', 'Pinned Products', 'Hidden Products', 'Hidden in Store App', 'Discounted Products', 'Out of Stock Products', 'For Sale Products', 'Uncategorized Products', 'Taxable Products', 'Products Requiring Shipping', 'Nearly Out of Stock', 'Products Without Description']
+const productFilterStatus: Record<string, string> = {
+  'Unpriced Products': 'unpriced',
+  'Pinned Products': 'pinned',
+  'Hidden Products': 'hidden',
+  'Hidden in Store App': 'hidden_app',
+  'Discounted Products': 'discounted',
+  'Out of Stock Products': 'out_of_stock',
+  'For Sale Products': 'sale',
+  'Uncategorized Products': 'uncategorized',
+  'Taxable Products': 'taxable',
+  'Products Requiring Shipping': 'requires_shipping',
+  'Nearly Out of Stock': 'low_stock',
+  'Products Without Description': 'missing_description',
+}
 const reportMenu = ['Performance summary', 'Sales', 'Orders', 'Customers', 'Visits', 'Landing pages', 'Conversion rate', 'Abandoned carts', 'Payments', 'Shipping', 'Inventory', 'Customer wallet']
 const carriers = ['Aramex', 'Smsa', 'DHL Express', 'Fetchr', 'J&T Express', 'RedBox']
 const apps = ['Offers Bundles Upsell Cross sell', 'Zud, Increase Average Order Value', 'InstaCart - Shoppable Instagram Feed', 'Alfinder', 'Bousla', 'Wallet Plus', 'WhatsApp Chat Button', 'Rawaj Sales Boost Widgets']
@@ -276,7 +290,7 @@ function PublicHome({ setScreen }: { setScreen: (screen: Screen) => void }) {
       <section className="public-hero">
         <div className="public-copy">
           <span className="public-badge">من الفكرة إلى متجر جاهز</span>
-          <h1>مدار.. ابنِ متجرك الإلكتروني بنفس تجربة سلة وطور عليها</h1>
+          <h1>مدار.. ابنِ متجرك الإلكتروني بتجربة مرنة وسريعة</h1>
           <p>
             واجهة عربية لصناعة المتاجر: تسجيل، أسئلة تجهيز المتجر، اختيار الباقة، ثم لوحة تحكم كاملة لإدارة الطلبات والمنتجات والتسويق والتقارير.
           </p>
@@ -368,7 +382,7 @@ function PublicHome({ setScreen }: { setScreen: (screen: Screen) => void }) {
       <footer className="public-footer" id="resources">
         <div>
           <h2>مدار</h2>
-          <p>نسخة واجهات لصانع متاجر مستوحى من تجربة سلة، مع تطوير يناسب مدار.</p>
+          <p>نسخة واجهات لصانع متاجر مدار، مصممة لتكون مرنة وواضحة قبل ربط الباك اند.</p>
         </div>
         <div>
           <h3>المنصة</h3>
@@ -395,7 +409,7 @@ function RegisterPage({ setScreen }: { setScreen: (screen: Screen) => void }) {
         <aside className="auth-visual">
           <span>ابدأ الآن</span>
           <h1>أنشئ متجرك الإلكتروني في دقائق</h1>
-          <p>نفس رحلة سلة التي حللناها: تسجيل الحساب، التحقق، أسئلة تجهيز المتجر، ثم لوحة التحكم.</p>
+          <p>رحلة مدار الكاملة: تسجيل الحساب، التحقق، أسئلة تجهيز المتجر، ثم لوحة التحكم.</p>
           <div className="auth-illustration" dir="ltr">
             <i /><i /><i />
             <section><b>Store setup</b><span /></section>
@@ -504,20 +518,154 @@ const onboardingSteps = [
   },
 ]
 
+void onboardingSteps
+
+type OnboardingOption = {
+  label: string
+  next?: string
+}
+
+type OnboardingFlowStep = {
+  question: string
+  helper: string
+  options: OnboardingOption[]
+}
+
+const onboardingFlow: Record<string, OnboardingFlowStep> = {
+  country: {
+    question: 'أين يقع نشاطك التجاري؟',
+    helper: 'اختيار الدولة يحدد المتطلبات والقنوات المناسبة من البداية.',
+    options: [
+      { label: 'البحرين', next: 'business_stage' },
+      { label: 'السعودية', next: 'business_stage' },
+      { label: 'الإمارات', next: 'business_stage' },
+      { label: 'الكويت', next: 'market_waitlist' },
+      { label: 'دولة أخرى', next: 'market_waitlist' },
+    ],
+  },
+  market_waitlist: {
+    question: 'مدار غير متاح بالكامل في دولتك حتى الآن',
+    helper: 'نقدر نكمل تجهيز الواجهة ونحفظ اهتمامك، لكن إعدادات الدفع والشحن الرسمية تتغير حسب الدولة لاحقًا.',
+    options: [
+      { label: 'أكمل تجهيز المتجر كتجربة', next: 'business_stage' },
+      { label: 'أبلغوني عند توفر الدولة', next: 'plans' },
+    ],
+  },
+  business_stage: {
+    question: 'هل نشاطك قائم حاليًا؟',
+    helper: 'لو تبيع حاليًا نحتاج نسألك عن القنوات والمبيعات. لو تبدأ جديد نختصر المسار ونركز على التجهيز.',
+    options: [
+      { label: 'نعم، أبيع حاليًا', next: 'current_channels' },
+      { label: 'لا، أبدأ مشروع جديد', next: 'license_status' },
+    ],
+  },
+  current_channels: {
+    question: 'أين تبيع حاليًا؟',
+    helper: 'هذا يحدد هل نعرض لك شاشات نقل المنتجات، الربط، أو قنوات البيع.',
+    options: [
+      { label: 'متجر فعلي', next: 'license_status' },
+      { label: 'منصة تجارة إلكترونية أخرى', next: 'migration_source' },
+      { label: 'وسائل التواصل', next: 'license_status' },
+      { label: 'Marketplaces', next: 'license_status' },
+    ],
+  },
+  migration_source: {
+    question: 'من أي منصة تريد نقل بياناتك؟',
+    helper: 'نجهز لاحقًا شاشة استيراد مناسبة للمنصة التي تختارها.',
+    options: [
+      { label: 'منصة مشابهة', next: 'license_status' },
+      { label: 'زد', next: 'license_status' },
+      { label: 'شوبيفاي', next: 'license_status' },
+      { label: 'منصة أخرى', next: 'license_status' },
+    ],
+  },
+  license_status: {
+    question: 'هل عندك سجل تجاري أو رخصة تجارية؟',
+    helper: 'هذا يغير مسار التوثيق؛ لا نجبر المستخدم الجديد على نفس أسئلة المتجر القائم.',
+    options: [
+      { label: 'نعم', next: 'product_type' },
+      { label: 'لا', next: 'license_intent' },
+      { label: 'قيد الاستخراج', next: 'product_type' },
+    ],
+  },
+  license_intent: {
+    question: 'هل أنت في مرحلة استخراج الرخصة؟',
+    helper: 'لو لا، نكمل مسار تجريبي ونؤجل التوثيق للباك اند لاحقًا.',
+    options: [
+      { label: 'نعم، أعمل عليها', next: 'product_type' },
+      { label: 'لا، أحتاج أبدأ بدون رخصة الآن', next: 'product_type' },
+    ],
+  },
+  product_type: {
+    question: 'ماذا تخطط أن تبيع؟',
+    helper: 'نوع المنتج يحدد ظهور الشحن، الملفات الرقمية، الحجوزات، أو المطاعم.',
+    options: [
+      { label: 'منتجات فعلية', next: 'monthly_sales' },
+      { label: 'دروبشيبنق', next: 'monthly_sales' },
+      { label: 'منتجات رقمية', next: 'team_size' },
+      { label: 'خدمات وحجوزات', next: 'team_size' },
+      { label: 'أطعمة ومشروبات', next: 'monthly_sales' },
+    ],
+  },
+  monthly_sales: {
+    question: 'كم مبيعاتك الشهرية تقريبًا؟',
+    helper: 'هذا السؤال يظهر فقط للمسارات التي تحتاج توقعات تشغيل ومبيعات.',
+    options: [
+      { label: 'أقل من 5K AED', next: 'team_size' },
+      { label: '5K - 25K AED', next: 'team_size' },
+      { label: '25K - 100K AED', next: 'team_size' },
+      { label: '100K - 500K AED', next: 'team_size' },
+      { label: 'أكثر من 500K AED', next: 'team_size' },
+    ],
+  },
+  team_size: {
+    question: 'كم شخص سيعمل على المتجر؟',
+    helper: 'نبرز شاشات الموظفين والصلاحيات فقط عندما تكون مفيدة.',
+    options: [
+      { label: 'أنا فقط', next: 'sector' },
+      { label: '2 إلى 5', next: 'sector' },
+      { label: '6 إلى 20', next: 'sector' },
+      { label: 'أكثر من 20', next: 'sector' },
+    ],
+  },
+  sector: {
+    question: 'ما القطاع الأقرب لمتجرك؟',
+    helper: 'آخر خطوة قبل اختيار الباقة. يمكن تعديلها لاحقًا من إعدادات المتجر.',
+    options: [
+      { label: 'إلكترونيات', next: 'plans' },
+      { label: 'أزياء', next: 'plans' },
+      { label: 'عطور وتجميل', next: 'plans' },
+      { label: 'مطاعم ومقاهي', next: 'plans' },
+      { label: 'هدايا وإكسسوارات', next: 'plans' },
+      { label: 'منتجات رقمية', next: 'plans' },
+      { label: 'خدمات', next: 'plans' },
+      { label: 'كتب وتعليم', next: 'plans' },
+    ],
+  },
+}
+
 function OnboardingPage({ setScreen }: { setScreen: (screen: Screen) => void }) {
-  const [step, setStep] = useState(0)
-  const [answers, setAnswers] = useState<string[]>([])
-  const current = onboardingSteps[step]
-  const isPlans = step >= onboardingSteps.length
-  const progress = Math.min(((step + 1) / (onboardingSteps.length + 1)) * 100, 100)
+  const [currentId, setCurrentId] = useState('country')
+  const [history, setHistory] = useState<string[]>([])
+  const [answers, setAnswers] = useState<Record<string, string>>({})
+  const current = onboardingFlow[currentId]
+  const isPlans = currentId === 'plans'
+  const progress = Math.min(((history.length + 1) / 9) * 100, 100)
 
   const choose = (answer: string) => {
-    setAnswers((prev) => {
+    const option = current.options.find((item) => item.label === answer)
+    setAnswers((prev) => ({ ...prev, [currentId]: answer }))
+    setHistory((prev) => [...prev, currentId])
+    setCurrentId(option?.next ?? 'plans')
+  }
+
+  const goBack = () => {
+    setHistory((prev) => {
       const next = [...prev]
-      next[step] = answer
+      const previous = next.pop()
+      setCurrentId(previous ?? 'country')
       return next
     })
-    setStep((value) => value + 1)
   }
 
   return (
@@ -527,36 +675,36 @@ function OnboardingPage({ setScreen }: { setScreen: (screen: Screen) => void }) 
         <div className="qna-progress"><span style={{ width: `${progress}%` }} /></div>
         {!isPlans ? (
           <>
-            <button className="auth-back" disabled={step === 0} onClick={() => setStep((value) => Math.max(0, value - 1))}>Go back</button>
-            <small>Question {step + 1} of {onboardingSteps.length}</small>
+            <button className="auth-back" disabled={history.length === 0} onClick={goBack}>Go back</button>
+            <small>Question {history.length + 1} · Branching setup</small>
             <h1>{current.question}</h1>
             <p>{current.helper}</p>
             <div className="qna-options">
               {current.options.map((option) => (
-                <button className={answers[step] === option ? 'selected' : ''} key={option} onClick={() => choose(option)}>
-                  {option}
+                <button className={answers[currentId] === option.label ? 'selected' : ''} key={option.label} onClick={() => choose(option.label)}>
+                  {option.label}
                 </button>
               ))}
             </div>
           </>
         ) : (
-          <PlanChoice setScreen={setScreen} setStep={setStep} />
+          <PlanChoice setScreen={setScreen} setStep={setCurrentId} />
         )}
       </section>
     </main>
   )
 }
 
-function PlanChoice({ setScreen, setStep }: { setScreen: (screen: Screen) => void; setStep: (step: number) => void }) {
+function PlanChoice({ setScreen, setStep }: { setScreen: (screen: Screen) => void; setStep: (step: string) => void }) {
   const plans = [
-    ['Salla Basic', 'Free', 'For new sellers & explorers'],
-    ['Salla Plus', 'AED 99 / Month', 'For small businesses'],
-    ['Salla Pro', 'AED 299 / Month', 'For established companies'],
+    ['مدار Basic', 'Free', 'For new sellers & explorers'],
+    ['مدار Plus', 'AED 99 / Month', 'For small businesses'],
+    ['مدار Pro', 'AED 299 / Month', 'For established companies'],
   ]
 
   return (
     <section className="plan-choice">
-      <button className="auth-back" onClick={() => setStep(onboardingSteps.length - 1)}>Go back</button>
+      <button className="auth-back" onClick={() => setStep('sector')}>Go back</button>
       <span>Monthly <b>Save 16% annually</b></span>
       <h1>Grow your business with the right plan</h1>
       <div>
@@ -736,7 +884,7 @@ function HeaderToolPanel({
       <p>Ask for store setup ideas, dashboard guidance, or launch checklist help.</p>
       <div className="quick-results">
         <button onClick={() => go('summary')}>Setup checklist</button>
-        <button onClick={() => go('marketing', 'Marketing:Salla Ads')}>Marketing ideas</button>
+        <button onClick={() => go('marketing', 'Marketing:إعلانات مدار')}>Marketing ideas</button>
         <button onClick={() => go('products', 'Products:All products')}>Product tasks</button>
       </div>
     </section>
@@ -1059,7 +1207,7 @@ function PagePreview({ title, group, link }: { title: string; group: string; lin
       <section className="dynamic-hero">
         <span>{group}</span>
         <h1>{title}</h1>
-        <p>This screen is now connected from the All menu with its own title, breadcrumb, side navigation, and Salla-style empty workspace.</p>
+        <p>This screen is now connected from the All menu with its own title, breadcrumb, side navigation, and مدار workspace state.</p>
         <div>
           <button>Primary action</button>
           <button>Learn more</button>
@@ -1109,10 +1257,46 @@ function Orders() {
 }
 
 function Products() {
-  const [activeFilter, setActiveFilter] = useState(productFilters[0])
+  const initialFilter = () => {
+    const status = new URLSearchParams(window.location.search).get('status')
+    return productFilters.find((item) => productFilterStatus[item] === status) ?? productFilters[0]
+  }
+  const [activeFilter, setActiveFilter] = useState(initialFilter)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
+  const setProductFilter = (item: string) => {
+    setActiveFilter(item)
+    const status = productFilterStatus[item]
+    const nextUrl = `${window.location.pathname}${status ? `?status=${status}` : ''}`
+    window.history.pushState({}, '', nextUrl)
+  }
 
   return (
-    <PageShell crumb="Products" title="All products" aside={<FilterList title="Product filters" items={productFilters} activeItem={activeFilter} onItemClick={setActiveFilter} />}>
+    <PageShell crumb="Products" title="All products" aside={<FilterList title="Product filters" items={productFilters} activeItem={activeFilter} onItemClick={setProductFilter} />}>
+      <section className="products-toolbar">
+        <label>
+          <Search size={17} />
+          <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search by product name or SKU" />
+        </label>
+        <details className="filter-details" open={filterDrawerOpen} onToggle={(event) => setFilterDrawerOpen(event.currentTarget.open)}>
+          <summary className="filter"><Filter size={17} /> Filter</summary>
+          <div className="filter-panel">
+            <b>Product status</b>
+            <span>{activeFilter}</span>
+            <button onClick={() => setFilterDrawerOpen(false)}>Apply</button>
+          </div>
+        </details>
+        <select defaultValue="newest">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="name">Name A-Z</option>
+        </select>
+      </section>
+      <section className="active-filter-strip">
+        <span>Status</span>
+        <button>{activeFilter}</button>
+        {searchTerm && <button>Search: {searchTerm}</button>}
+      </section>
       <SplitEmpty title={`No ${activeFilter.toLowerCase()} selected`} action="Filter" context={activeFilter} />
     </PageShell>
   )
@@ -1123,7 +1307,7 @@ function Marketing() {
 
   return (
     <div className="page-stack">
-      <LockedFeature title="Salla Ads" body="Use Salla Ads to reach more customers and increase your store sales." />
+      <LockedFeature title="إعلانات مدار" body="Use مدار Ads to reach more customers and increase your store sales." />
       <SelectableTabs items={['Snapchat', 'TikTok', 'Google', 'Meta', 'YouTube']} activeItem={activeChannel} onChange={setActiveChannel} />
       <MetricGrid metrics={[['Impressions', '0'], ['Avg. CPC', '0 SAR'], ['Clicks', '0'], ['Spent', '0 SAR']]} />
       <div className="two-panels">
@@ -1217,14 +1401,14 @@ function Shipping() {
 function Payments() {
   return (
     <div className="page-stack">
-      <LockedFeature title="Salla Payments" body="Make checkout easier for your customers. Enable online payments and let customers pay securely through your store." />
+      <LockedFeature title="مدفوعات مدار" body="Make checkout easier for your customers. Enable online payments and let customers pay securely through your store." />
       <section className="verify-card">
         <ShieldCheck size={34} />
         <div><h2>Your store isn't verified</h2><p>Verify your store to activate and manage online payments securely.</p></div>
         <button>Verify now</button>
       </section>
       <section className="payment-grid">
-        {['Salla Payments', 'Tabby', 'Tamara', 'Digital wallets', 'PayPal', 'Bank transfer'].map((method) => <article key={method}><WalletCards /><b>{method}</b><button>Activate</button></article>)}
+        {['مدفوعات مدار', 'Tabby', 'Tamara', 'Digital wallets', 'PayPal', 'Bank transfer'].map((method) => <article key={method}><WalletCards /><b>{method}</b><button>Activate</button></article>)}
       </section>
     </div>
   )
