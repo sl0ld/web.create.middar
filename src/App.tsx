@@ -1134,6 +1134,30 @@ function DynamicPage({
     setActivePageKey(`${group}:${item}`)
   }
 
+  if (pageKey === 'Products:New product' || pageKey === 'Products:Product editor') {
+    return <ProductEditorPage mode={pageKey.endsWith('New product') ? 'new' : 'bulk'} />
+  }
+
+  if (pageKey === 'Products:Product settings') {
+    return <ProductSettingsPage />
+  }
+
+  if (pageKey === 'Products:Categories & options') {
+    return <CategoriesOptionsPage />
+  }
+
+  if (pageKey === 'Orders:New order') {
+    return <NewOrderPage />
+  }
+
+  if (pageKey === 'Orders:Order settings') {
+    return <OrderSettingsPage />
+  }
+
+  if (pageKey === 'Marketing:Create Ad') {
+    return <CampaignBuilderPage />
+  }
+
   if (detail) {
     return (
       <PageShell crumb={group} title={pageTitle} aside={<FilterList title={asideTitle} items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
@@ -1241,6 +1265,164 @@ function UnavailablePanel() {
         <button>Start free trial</button>
       </div>
     </section>
+  )
+}
+
+function ProductEditorPage({ mode }: { mode: 'new' | 'bulk' }) {
+  return (
+    <PageShell crumb="Products" title={mode === 'new' ? 'New product' : 'Product editor'} aside={<FilterList title="Product setup" items={['Basic information', 'Price & inventory', 'Images', 'Shipping', 'SEO', 'Options']} activeItem="Basic information" />}>
+      <section className="form-workspace">
+        <div className="form-main">
+          <Panel title={mode === 'new' ? 'Basic information' : 'Bulk product editor'}>
+            <div className="form-grid">
+              <Label title="Product name" helper="Visible in storefront and dashboard" placeholder="Example: Linen abaya" />
+              <Label title="SKU" helper="Optional product identifier" placeholder="MD-ABY-001" />
+              <label className="field wide">
+                <span>Description <em>Optional</em></span>
+                <small>Add clear details for your customers.</small>
+                <textarea placeholder="Write product description" />
+              </label>
+            </div>
+          </Panel>
+          <Panel title="Price & inventory">
+            <div className="form-grid three">
+              <Label title="Price" helper="Default selling price" placeholder="0.000 BHD" />
+              <Label title="Sale price" helper="Optional discount price" placeholder="0.000 BHD" />
+              <Label title="Quantity" helper="Available stock" placeholder="0" />
+            </div>
+          </Panel>
+          <Panel title="Images">
+            <div className="upload wide-upload">
+              <span><ShoppingBag size={30} /></span>
+              <b>Drag & drop product images</b>
+              <button>or browse device</button>
+            </div>
+          </Panel>
+        </div>
+        <aside className="form-side">
+          <Panel title="Publishing">
+            <div className="setting-list">
+              <label><span>Product status</span><select defaultValue="sale"><option value="sale">For sale</option><option value="hidden">Hidden</option></select></label>
+              <label><span>Requires shipping</span><input type="checkbox" defaultChecked /></label>
+              <label><span>Taxable product</span><input type="checkbox" /></label>
+            </div>
+            <button className="save">Save product</button>
+          </Panel>
+          <Panel title="Preview">
+            <Empty title="Product preview" body="Preview updates after adding product images and details." />
+          </Panel>
+        </aside>
+      </section>
+    </PageShell>
+  )
+}
+
+function ProductSettingsPage() {
+  return (
+    <PageShell crumb="Products" title="Product settings" aside={<FilterList title="Products" items={['Product settings', 'Categories & options', 'Inventory management', 'Import & export']} activeItem="Product settings" />}>
+      <section className="settings-grid">
+        {[
+          ['Product display', 'Control product visibility, sold-out labels, and storefront badges.'],
+          ['Inventory alerts', 'Choose low-stock thresholds and stock notifications.'],
+          ['Reviews and questions', 'Show reviews, product questions, and moderation states.'],
+          ['Digital products', 'Prepare download delivery and access rules for digital items.'],
+          ['Product SEO', 'Default title and metadata patterns for products.'],
+          ['Import & export', 'Templates, mapping, and product file previews.'],
+        ].map(([title, body]) => (
+          <article key={title}><ShoppingBag size={22} /><h3>{title}</h3><p>{body}</p><button>Open</button></article>
+        ))}
+      </section>
+    </PageShell>
+  )
+}
+
+function CategoriesOptionsPage() {
+  return (
+    <PageShell crumb="Products" title="Categories & options" aside={<FilterList title="Catalog" items={['Categories', 'Product options', 'Brands', 'Tags']} activeItem="Categories" />}>
+      <div className="two-panels">
+        <Panel title="Categories">
+          <Table rows={[['Abayas', '12 products', 'Visible'], ['Perfumes', '8 products', 'Visible'], ['New arrivals', '0 products', 'Draft']]} />
+        </Panel>
+        <Panel title="Product options">
+          <Table rows={[['Size', 'S, M, L, XL', 'Active'], ['Color', 'Black, Beige, Olive', 'Active'], ['Gift wrap', 'Yes / No', 'Draft']]} />
+        </Panel>
+      </div>
+    </PageShell>
+  )
+}
+
+function NewOrderPage() {
+  return (
+    <PageShell crumb="Orders" title="New order" aside={<FilterList title="Order flow" items={['Customer', 'Products', 'Shipping', 'Payment', 'Review']} activeItem="Customer" />}>
+      <section className="form-workspace">
+        <div className="form-main">
+          <Panel title="Customer">
+            <div className="form-grid">
+              <Label title="Customer name" helper="Search or enter customer name" placeholder="Customer name" />
+              <Label title="Phone number" helper="Used for order updates" placeholder="+973 0000 0000" />
+            </div>
+          </Panel>
+          <Panel title="Products">
+            <div className="products-toolbar">
+              <label><Search size={17} /><input placeholder="Search products to add" /></label>
+              <button className="filter"><Plus size={17} /> Add custom item</button>
+            </div>
+            <Empty title="No products added" body="Search and add products to start the order." />
+          </Panel>
+        </div>
+        <aside className="form-side">
+          <Panel title="Order summary">
+            <Table rows={[['Subtotal', '0.000 BHD'], ['Shipping', '0.000 BHD'], ['Total', '0.000 BHD']]} />
+            <button className="save">Create order</button>
+          </Panel>
+        </aside>
+      </section>
+    </PageShell>
+  )
+}
+
+function OrderSettingsPage() {
+  return (
+    <PageShell crumb="Orders" title="Order settings" aside={<FilterList title="Settings" items={['General', 'Checkout fields', 'Invoices', 'Auto tags', 'Notifications']} activeItem="General" />}>
+      <section className="settings-grid">
+        {[
+          ['Checkout behavior', 'Control notes, order confirmation, and customer checkout options.'],
+          ['Invoice numbering', 'Prefix, sequence, and invoice appearance.'],
+          ['Order tags', 'Automatic tags based on products, city, or payment method.'],
+          ['Status automation', 'Move orders based on simple visual rules.'],
+          ['Customer messages', 'Templates for order created, shipped, and delivered.'],
+          ['Custom fields', 'Collect extra order or registration information.'],
+        ].map(([title, body]) => (
+          <article key={title}><ClipboardList size={22} /><h3>{title}</h3><p>{body}</p><button>Open</button></article>
+        ))}
+      </section>
+    </PageShell>
+  )
+}
+
+function CampaignBuilderPage() {
+  return (
+    <PageShell crumb="Marketing" title="Create Ad" aside={<FilterList title="Campaign setup" items={['Channel', 'Audience', 'Budget', 'Creative', 'Review']} activeItem="Channel" />}>
+      <section className="form-workspace">
+        <div className="form-main">
+          <FeatureHero title="Create Ad" badge="Visual setup" body="Build a campaign draft and preview its structure before connecting real ad accounts." action="Start draft" />
+          <Panel title="Channel">
+            <SelectableTabs items={['Snapchat', 'TikTok', 'Google', 'Meta', 'YouTube']} activeItem="Snapchat" onChange={() => undefined} />
+          </Panel>
+          <Panel title="Campaign details">
+            <div className="form-grid">
+              <Label title="Campaign name" helper="Internal name shown in reports" placeholder="Summer launch" />
+              <Label title="Daily budget" helper="Preview only" placeholder="10.000 BHD" />
+            </div>
+          </Panel>
+        </div>
+        <aside className="form-side">
+          <Panel title="Readiness">
+            <Table rows={[['Pixel', 'Not connected'], ['Audience', 'Draft'], ['Payment', 'Pending']]} />
+          </Panel>
+        </aside>
+      </section>
+    </PageShell>
   )
 }
 
