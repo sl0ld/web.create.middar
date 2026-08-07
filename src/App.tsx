@@ -1158,6 +1158,10 @@ function DynamicPage({
     return <CampaignBuilderPage />
   }
 
+  if (pageKey === 'Online Store:Store design' || pageKey === 'Online Store:Theme Marketplace' || pageKey === 'Online Store:Manage themes') {
+    return <ThemeEditorPage />
+  }
+
   if (detail) {
     return (
       <PageShell crumb={group} title={pageTitle} aside={<FilterList title={asideTitle} items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
@@ -1220,8 +1224,9 @@ function DynamicPage({
 }
 
 function PagePreview({ title, group, link }: { title: string; group: string; link: string }) {
+  const [notice, setNotice] = useState('Ready screen')
   const rows = [
-    [title, group, 'Ready screen'],
+    [title, group, notice],
     ['Filters', 'Visual only', 'No backend yet'],
     ['Actions', link.includes('settings') || link.includes('Settings') ? 'Settings layout' : 'Empty state', 'Draft'],
   ]
@@ -1233,8 +1238,8 @@ function PagePreview({ title, group, link }: { title: string; group: string; lin
         <h1>{title}</h1>
         <p>This screen is now connected from the All menu with its own title, breadcrumb, side navigation, and مدار workspace state.</p>
         <div>
-          <button>Primary action</button>
-          <button>Learn more</button>
+          <button onClick={() => setNotice('Primary action selected')}>Primary action</button>
+          <button onClick={() => setNotice('Guide panel opened')}>Learn more</button>
         </div>
       </section>
       <div className="split-empty">
@@ -1269,8 +1274,12 @@ function UnavailablePanel() {
 }
 
 function ProductEditorPage({ mode }: { mode: 'new' | 'bulk' }) {
+  const setupSections = ['Basic information', 'Price & inventory', 'Images', 'Shipping', 'SEO', 'Options']
+  const [activeSection, setActiveSection] = useState(setupSections[0])
+  const [saveState, setSaveState] = useState('Draft not saved')
+
   return (
-    <PageShell crumb="Products" title={mode === 'new' ? 'New product' : 'Product editor'} aside={<FilterList title="Product setup" items={['Basic information', 'Price & inventory', 'Images', 'Shipping', 'SEO', 'Options']} activeItem="Basic information" />}>
+    <PageShell crumb="Products" title={mode === 'new' ? 'New product' : 'Product editor'} aside={<FilterList title="Product setup" items={setupSections} activeItem={activeSection} onItemClick={setActiveSection} />}>
       <section className="form-workspace">
         <div className="form-main">
           <Panel title={mode === 'new' ? 'Basic information' : 'Bulk product editor'}>
@@ -1295,8 +1304,15 @@ function ProductEditorPage({ mode }: { mode: 'new' | 'bulk' }) {
             <div className="upload wide-upload">
               <span><ShoppingBag size={30} /></span>
               <b>Drag & drop product images</b>
-              <button>or browse device</button>
+              <button onClick={() => setSaveState('Image picker opened')}>or browse device</button>
             </div>
+          </Panel>
+          <Panel title={`${activeSection} details`}>
+            <Table rows={[
+              ['Section', activeSection, 'Active'],
+              ['Preview', activeSection === 'SEO' ? 'Search preview ready' : 'Visible in product workflow', 'Draft'],
+              ['Validation', activeSection === 'Price & inventory' ? 'Price and stock required' : 'Optional details', 'Visual'],
+            ]} />
           </Panel>
         </div>
         <aside className="form-side">
@@ -1306,7 +1322,8 @@ function ProductEditorPage({ mode }: { mode: 'new' | 'bulk' }) {
               <label><span>Requires shipping</span><input type="checkbox" defaultChecked /></label>
               <label><span>Taxable product</span><input type="checkbox" /></label>
             </div>
-            <button className="save">Save product</button>
+            <button className="save" onClick={() => setSaveState('Product draft saved')}>Save product</button>
+            <p className="inline-status">{saveState}</p>
           </Panel>
           <Panel title="Preview">
             <Empty title="Product preview" body="Preview updates after adding product images and details." />
@@ -1318,29 +1335,36 @@ function ProductEditorPage({ mode }: { mode: 'new' | 'bulk' }) {
 }
 
 function ProductSettingsPage() {
+  const [activeCard, setActiveCard] = useState('Product display')
+  const settings = [
+    ['Product display', 'Control product visibility, sold-out labels, and storefront badges.'],
+    ['Inventory alerts', 'Choose low-stock thresholds and stock notifications.'],
+    ['Reviews and questions', 'Show reviews, product questions, and moderation states.'],
+    ['Digital products', 'Prepare download delivery and access rules for digital items.'],
+    ['Product SEO', 'Default title and metadata patterns for products.'],
+    ['Import & export', 'Templates, mapping, and product file previews.'],
+  ]
+
   return (
     <PageShell crumb="Products" title="Product settings" aside={<FilterList title="Products" items={['Product settings', 'Categories & options', 'Inventory management', 'Import & export']} activeItem="Product settings" />}>
       <section className="settings-grid">
-        {[
-          ['Product display', 'Control product visibility, sold-out labels, and storefront badges.'],
-          ['Inventory alerts', 'Choose low-stock thresholds and stock notifications.'],
-          ['Reviews and questions', 'Show reviews, product questions, and moderation states.'],
-          ['Digital products', 'Prepare download delivery and access rules for digital items.'],
-          ['Product SEO', 'Default title and metadata patterns for products.'],
-          ['Import & export', 'Templates, mapping, and product file previews.'],
-        ].map(([title, body]) => (
-          <article key={title}><ShoppingBag size={22} /><h3>{title}</h3><p>{body}</p><button>Open</button></article>
+        {settings.map(([title, body]) => (
+          <article className={activeCard === title ? 'active-card' : ''} key={title}><ShoppingBag size={22} /><h3>{title}</h3><p>{body}</p><button onClick={() => setActiveCard(title)}>Open</button></article>
         ))}
       </section>
+      <Panel title={activeCard}>
+        <Table rows={[['Status', 'Editable', 'Visual only'], ['Current value', activeCard.includes('Inventory') ? 'Low stock at 5 units' : 'Default storefront behavior', 'Active'], ['Last action', 'Opened from settings card', 'Ready']]} />
+      </Panel>
     </PageShell>
   )
 }
 
 function CategoriesOptionsPage() {
+  const [activeCatalog, setActiveCatalog] = useState('Categories')
   return (
-    <PageShell crumb="Products" title="Categories & options" aside={<FilterList title="Catalog" items={['Categories', 'Product options', 'Brands', 'Tags']} activeItem="Categories" />}>
+    <PageShell crumb="Products" title="Categories & options" aside={<FilterList title="Catalog" items={['Categories', 'Product options', 'Brands', 'Tags']} activeItem={activeCatalog} onItemClick={setActiveCatalog} />}>
       <div className="two-panels">
-        <Panel title="Categories">
+        <Panel title={activeCatalog}>
           <Table rows={[['Abayas', '12 products', 'Visible'], ['Perfumes', '8 products', 'Visible'], ['New arrivals', '0 products', 'Draft']]} />
         </Panel>
         <Panel title="Product options">
@@ -1352,8 +1376,12 @@ function CategoriesOptionsPage() {
 }
 
 function NewOrderPage() {
+  const orderSteps = ['Customer', 'Products', 'Shipping', 'Payment', 'Review']
+  const [activeStep, setActiveStep] = useState(orderSteps[0])
+  const [orderNote, setOrderNote] = useState('No products added')
+
   return (
-    <PageShell crumb="Orders" title="New order" aside={<FilterList title="Order flow" items={['Customer', 'Products', 'Shipping', 'Payment', 'Review']} activeItem="Customer" />}>
+    <PageShell crumb="Orders" title="New order" aside={<FilterList title="Order flow" items={orderSteps} activeItem={activeStep} onItemClick={setActiveStep} />}>
       <section className="form-workspace">
         <div className="form-main">
           <Panel title="Customer">
@@ -1365,9 +1393,12 @@ function NewOrderPage() {
           <Panel title="Products">
             <div className="products-toolbar">
               <label><Search size={17} /><input placeholder="Search products to add" /></label>
-              <button className="filter"><Plus size={17} /> Add custom item</button>
+              <button className="filter" onClick={() => setOrderNote('Custom item added to visual order') }><Plus size={17} /> Add custom item</button>
             </div>
-            <Empty title="No products added" body="Search and add products to start the order." />
+            <Empty title={orderNote} body="Search and add products to start the order." />
+          </Panel>
+          <Panel title={`${activeStep} step`}>
+            <Table rows={[['Current step', activeStep, 'Open'], ['Validation', activeStep === 'Review' ? 'Ready for review' : 'Needs merchant input', 'Draft']]} />
           </Panel>
         </div>
         <aside className="form-side">
@@ -1382,32 +1413,41 @@ function NewOrderPage() {
 }
 
 function OrderSettingsPage() {
+  const [activeSetting, setActiveSetting] = useState('Checkout behavior')
+  const settings = [
+    ['Checkout behavior', 'Control notes, order confirmation, and customer checkout options.'],
+    ['Invoice numbering', 'Prefix, sequence, and invoice appearance.'],
+    ['Order tags', 'Automatic tags based on products, city, or payment method.'],
+    ['Status automation', 'Move orders based on simple visual rules.'],
+    ['Customer messages', 'Templates for order created, shipped, and delivered.'],
+    ['Custom fields', 'Collect extra order or registration information.'],
+  ]
+
   return (
     <PageShell crumb="Orders" title="Order settings" aside={<FilterList title="Settings" items={['General', 'Checkout fields', 'Invoices', 'Auto tags', 'Notifications']} activeItem="General" />}>
       <section className="settings-grid">
-        {[
-          ['Checkout behavior', 'Control notes, order confirmation, and customer checkout options.'],
-          ['Invoice numbering', 'Prefix, sequence, and invoice appearance.'],
-          ['Order tags', 'Automatic tags based on products, city, or payment method.'],
-          ['Status automation', 'Move orders based on simple visual rules.'],
-          ['Customer messages', 'Templates for order created, shipped, and delivered.'],
-          ['Custom fields', 'Collect extra order or registration information.'],
-        ].map(([title, body]) => (
-          <article key={title}><ClipboardList size={22} /><h3>{title}</h3><p>{body}</p><button>Open</button></article>
+        {settings.map(([title, body]) => (
+          <article className={activeSetting === title ? 'active-card' : ''} key={title}><ClipboardList size={22} /><h3>{title}</h3><p>{body}</p><button onClick={() => setActiveSetting(title)}>Open</button></article>
         ))}
       </section>
+      <Panel title={activeSetting}>
+        <Table rows={[['Preview', activeSetting, 'Open'], ['Rule status', activeSetting.includes('Custom') ? 'Available on higher plan' : 'Editable draft', 'Visual']]} />
+      </Panel>
     </PageShell>
   )
 }
 
 function CampaignBuilderPage() {
+  const [activeChannel, setActiveChannel] = useState('Snapchat')
+  const [activeStep, setActiveStep] = useState('Channel')
+
   return (
-    <PageShell crumb="Marketing" title="Create Ad" aside={<FilterList title="Campaign setup" items={['Channel', 'Audience', 'Budget', 'Creative', 'Review']} activeItem="Channel" />}>
+    <PageShell crumb="Marketing" title="Create Ad" aside={<FilterList title="Campaign setup" items={['Channel', 'Audience', 'Budget', 'Creative', 'Review']} activeItem={activeStep} onItemClick={setActiveStep} />}>
       <section className="form-workspace">
         <div className="form-main">
           <FeatureHero title="Create Ad" badge="Visual setup" body="Build a campaign draft and preview its structure before connecting real ad accounts." action="Start draft" />
           <Panel title="Channel">
-            <SelectableTabs items={['Snapchat', 'TikTok', 'Google', 'Meta', 'YouTube']} activeItem="Snapchat" onChange={() => undefined} />
+            <SelectableTabs items={['Snapchat', 'TikTok', 'Google', 'Meta', 'YouTube']} activeItem={activeChannel} onChange={setActiveChannel} />
           </Panel>
           <Panel title="Campaign details">
             <div className="form-grid">
@@ -1417,8 +1457,8 @@ function CampaignBuilderPage() {
           </Panel>
         </div>
         <aside className="form-side">
-          <Panel title="Readiness">
-            <Table rows={[['Pixel', 'Not connected'], ['Audience', 'Draft'], ['Payment', 'Pending']]} />
+          <Panel title={`${activeChannel} readiness`}>
+            <Table rows={[['Step', activeStep], ['Pixel', activeChannel === 'Google' ? 'Tag not connected' : 'Not connected'], ['Audience', 'Draft'], ['Payment', 'Pending']]} />
           </Panel>
         </aside>
       </section>
@@ -1500,20 +1540,83 @@ function Marketing() {
   )
 }
 
+function ThemeEditorPage() {
+  const editorSections = ['Header', 'Hero', 'Products', 'Footer', 'Colors', 'Mobile preview']
+  const [activeSection, setActiveSection] = useState(editorSections[0])
+  const [themeName, setThemeName] = useState(themes[0])
+  const [publishState, setPublishState] = useState('Draft theme')
+
+  return (
+    <PageShell crumb="Online Store" title="Store design" aside={<FilterList title="Theme editor" items={editorSections} activeItem={activeSection} onItemClick={setActiveSection} />}>
+      <section className="builder-shell">
+        <div className="builder-toolbar">
+          <div>
+            <span>Current theme</span>
+            <b>{themeName}</b>
+          </div>
+          <SelectableTabs items={['Desktop', 'Mobile', 'RTL']} activeItem={activeSection === 'Mobile preview' ? 'Mobile' : 'Desktop'} onChange={(item) => setActiveSection(item === 'Mobile' ? 'Mobile preview' : 'Header')} />
+          <button className="save" onClick={() => setPublishState('Theme changes saved')}>Save changes</button>
+        </div>
+        <div className="builder-grid">
+          <aside className="builder-controls">
+            <Panel title={activeSection}>
+              <div className="setting-list">
+                <label><span>Section visibility</span><input type="checkbox" defaultChecked /></label>
+                <label><span>Full width</span><input type="checkbox" defaultChecked={activeSection === 'Hero'} /></label>
+                <label><span>Spacing</span><select defaultValue="balanced"><option value="compact">Compact</option><option value="balanced">Balanced</option><option value="wide">Wide</option></select></label>
+              </div>
+            </Panel>
+            <Panel title="Theme marketplace">
+              <div className="theme-mini-grid">
+                {themes.slice(0, 4).map((theme) => (
+                  <button className={themeName === theme ? 'active' : ''} key={theme} onClick={() => setThemeName(theme)}>{theme}</button>
+                ))}
+              </div>
+            </Panel>
+          </aside>
+          <section className="store-preview-frame">
+            <div className="store-preview">
+              <header><b>مدار</b><nav><span>الرئيسية</span><span>الأقسام</span><span>تواصل معنا</span></nav></header>
+              <section className={activeSection === 'Hero' ? 'preview-hero active' : 'preview-hero'}>
+                <small>{themeName}</small>
+                <h2>واجهة متجر جاهزة للبيع</h2>
+                <button>تسوق الآن</button>
+              </section>
+              <div className={activeSection === 'Products' ? 'preview-products active' : 'preview-products'}>
+                {[1, 2, 3].map((item) => <article key={item}><i /><b>منتج {item}</b><span>0.000 BHD</span></article>)}
+              </div>
+              <footer className={activeSection === 'Footer' ? 'active' : ''}>© مدار - روابط المتجر والسياسات</footer>
+            </div>
+          </section>
+          <aside className="form-side">
+            <Panel title="Preview state">
+              <Table rows={[['Active section', activeSection], ['Theme', themeName], ['Status', publishState]]} />
+            </Panel>
+          </aside>
+        </div>
+      </section>
+    </PageShell>
+  )
+}
+
 function StoreDesign() {
+  const [activeTheme, setActiveTheme] = useState(themes[0])
   return (
     <div className="page-stack">
       <FeatureHero title="Theme editor" badge="Available on your plan" body="Customize your store with guided and clear steps, fast launch, and flexible visual controls." action="Start for free" />
       <section className="theme-grid">
         {themes.map((theme, index) => (
-          <article key={theme}>
+          <article className={activeTheme === theme ? 'active-card' : ''} key={theme}>
             <div className={`theme-art t${index + 1}`} />
             <h3>{theme}</h3>
             <p>{['Fashion', 'Electronics', 'Food & Grocery', 'Cosmetics', 'Digital products', 'Gifts'][index]}</p>
-            <button>Customize</button>
+            <button onClick={() => setActiveTheme(theme)}>Customize</button>
           </article>
         ))}
       </section>
+      <Panel title={`${activeTheme} preview`}>
+        <Table rows={[['Selected theme', activeTheme, 'Ready'], ['Editor', 'Open from Store design tab', 'Visual only']]} />
+      </Panel>
     </div>
   )
 }
