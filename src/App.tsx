@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   AppWindow,
   BarChart3,
@@ -35,6 +35,7 @@ import {
   X,
 } from 'lucide-react'
 import './App.css'
+import { appLocale, translateDom } from './i18n'
 
 type DashboardScreen =
   | 'summary'
@@ -361,6 +362,19 @@ function App() {
   const [activePageKey, setActivePageKey] = useState<string | null>(null)
   const active = useMemo(() => sections.find((section) => section.id === screen) ?? sections[0], [screen])
 
+  useEffect(() => {
+    translateDom()
+    const observer = new MutationObserver(() => translateDom())
+    observer.observe(document.body, {
+      attributeFilter: ['aria-label', 'placeholder', 'title'],
+      attributes: true,
+      characterData: true,
+      childList: true,
+      subtree: true,
+    })
+    return () => observer.disconnect()
+  }, [])
+
   if (screen === 'landing') {
     return <PublicHome setScreen={setScreen} />
   }
@@ -378,7 +392,7 @@ function App() {
   }
 
   return (
-    <main className="salla-shell" dir="ltr">
+    <main className="salla-shell" dir={appLocale.direction} lang={appLocale.language}>
       <Header active={active} screen={screen} setScreen={setScreen} setActivePageKey={setActivePageKey} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       {menuOpen && <MegaMenu setScreen={setScreen} setActivePageKey={setActivePageKey} setMenuOpen={setMenuOpen} />}
       <SubNav active={active} activePageKey={activePageKey} setScreen={setScreen} setActivePageKey={setActivePageKey} />
