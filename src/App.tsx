@@ -387,7 +387,7 @@ function App() {
             {screen === 'orders' && <Orders />}
             {screen === 'products' && <Products />}
             {screen === 'marketing' && <Marketing />}
-            {screen === 'store' && <StoreDesign />}
+            {screen === 'store' && <StoreChannelPage activePage="Store design" />}
             {screen === 'customers' && <Customers />}
             {screen === 'staff' && <Staff />}
             {screen === 'reports' && <Reports />}
@@ -1331,15 +1331,15 @@ function DynamicPage({
   }
 
   if (pageKey === 'Online Store:Store design' || pageKey === 'Online Store:Theme Marketplace' || pageKey === 'Online Store:Manage themes') {
-    return <ThemeEditorPage />
+    return <StoreChannelPage activePage={pageTitle === 'Manage themes' ? 'Store design' : pageTitle} />
   }
 
   if (pageKey === 'Online Store:Domain') {
-    return <DomainPage />
+    return <StoreChannelPage activePage="Domain" />
   }
 
   if (pageKey === 'Online Store:Information pages' || pageKey === 'Online Store:Custom URLs') {
-    return <InformationPagesPage activeView={pageTitle} />
+    return <StoreChannelPage activePage={pageTitle} />
   }
 
   if (route === 'payments') {
@@ -1412,15 +1412,7 @@ function DynamicPage({
   }
 
   if (route === 'store') {
-    return (
-      <PageShell crumb={group} title={pageTitle} aside={<FilterList title={group} items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
-        {pageTitle === 'Store design' || pageTitle === 'Theme Marketplace' ? (
-          <FeatureHero title={pageTitle} badge="Available on your plan" body="Customize the storefront experience, pages, channels, and launch-ready presentation." action="Open editor" />
-        ) : (
-          <PagePreview title={pageTitle} group={group} link={pageTitle} />
-        )}
-      </PageShell>
-    )
+    return <StoreChannelPage activePage={pageTitle} />
   }
 
   if (route === 'reports') {
@@ -2406,6 +2398,91 @@ function InformationPagesPage({ activeView }: { activeView: string }) {
   )
 }
 
+void ThemeEditorPage
+void DomainPage
+void InformationPagesPage
+
+function StoreChannelPage({ activePage = 'Store design' }: { activePage?: string }) {
+  const [selectedTheme, setSelectedTheme] = useState(themes[0])
+  const isDesign = activePage === 'Store design' || activePage === 'Manage themes'
+  const isMarketplace = activePage === 'Theme Marketplace'
+
+  if (isDesign) {
+    return (
+      <div className="store-channel-workspace">
+        <div className="marketing-breadcrumb"><span>Sales channels</span><span>›</span><b>Manage themes</b></div>
+        <h1>Manage themes</h1>
+        <section className="store-design-hero">
+          <div className="store-design-visual">
+            <div className="theme-browser-shot">
+              <aside><i /><i /><i /><i /></aside>
+              <main>
+                <header><span /><span /><span /></header>
+                <section><b /><b /></section>
+                <footer><i /><i /><i /></footer>
+              </main>
+            </div>
+          </div>
+          <div className="store-design-copy">
+            <h2>Stand out with your design</h2>
+            <p>Design and customize your store in easy steps that build customer trust.</p>
+            <div className="store-benefits">
+              {['Guided and clear steps', 'Launch in minutes', 'Simple design experience', 'Flexible and fast customization', 'High reliability for your store', 'Easier choices for your customers'].map((item) => (
+                <span key={item}><ShieldCheck size={17} /> {item}</span>
+              ))}
+            </div>
+            <button>Start for free</button>
+          </div>
+        </section>
+      </div>
+    )
+  }
+
+  if (isMarketplace) {
+    return (
+      <div className="store-channel-workspace">
+        <div className="marketing-breadcrumb"><span>Sales channels</span><span>›</span><b>Theme Marketplace</b></div>
+        <h1>Theme Marketplace</h1>
+        <section className="theme-market-grid">
+          {themes.map((theme, index) => (
+            <article className={selectedTheme === theme ? 'active-card' : ''} key={theme}>
+              <div className={`theme-art t${index + 1}`} />
+              <h3>{theme}</h3>
+              <p>{['Fashion', 'Electronics', 'Food & Grocery', 'Cosmetics', 'Digital products', 'Gifts'][index]}</p>
+              <button onClick={() => setSelectedTheme(theme)}>Preview theme</button>
+            </article>
+          ))}
+        </section>
+      </div>
+    )
+  }
+
+  const rows = activePage === 'Domain'
+    ? [['Default domain', 'saeed-store.middar.shop', 'Active'], ['Custom domain', 'Not connected', 'Pending'], ['SSL', 'Automatic', 'Ready']]
+    : activePage === 'Information pages'
+      ? [['About us', 'Draft', 'Visible after publish'], ['Terms & conditions', 'Draft', 'Required'], ['Privacy policy', 'Draft', 'Recommended']]
+      : activePage === 'Custom URLs'
+        ? [['Redirects', '0 rules', 'Empty'], ['Short links', '0 links', 'Empty'], ['SEO redirects', 'Ready', 'Visual']]
+        : [['Translation events', '0', 'No logs'], ['Languages', 'Arabic / English', 'Ready'], ['Status', 'No changes', 'Empty']]
+
+  return (
+    <div className="store-channel-workspace">
+      <div className="marketing-breadcrumb"><span>Sales channels</span><span>›</span><b>{activePage}</b></div>
+      <section className="store-admin-card">
+        <div>
+          <span>{activePage}</span>
+          <h1>{activePage}</h1>
+          <p>{activePage === 'Domain' ? 'Manage your store link, custom domain, SSL, and redirects.' : 'Manage this store channel screen with visual data until backend connection.'}</p>
+        </div>
+        <button>{activePage === 'Domain' ? 'Connect domain' : 'Create new'}</button>
+      </section>
+      <Panel title={`${activePage} overview`}>
+        <Table rows={rows} />
+      </Panel>
+    </div>
+  )
+}
+
 function StoreDesign() {
   const [activeTheme, setActiveTheme] = useState(themes[0])
   return (
@@ -2427,6 +2504,8 @@ function StoreDesign() {
     </div>
   )
 }
+
+void StoreDesign
 
 function Customers() {
   const customerGroups = ['All customers', 'Empty groups', 'VIP customers', 'New customers']

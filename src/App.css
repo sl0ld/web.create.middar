@@ -2916,6 +2916,213 @@ button {
   font-weight: 850;
 }
 
+.store-channel-workspace {
+  display: grid;
+  gap: 22px;
+}
+
+.store-channel-workspace h1 {
+  margin: 0;
+  color: var(--mint);
+  font-size: 26px;
+}
+
+.store-design-hero {
+  display: grid;
+  gap: 24px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.store-design-visual {
+  display: grid;
+  place-items: center;
+  min-height: 330px;
+  padding: 34px;
+  background:
+    radial-gradient(circle at 50% 48%, #d8fff2 0 9%, #9af3df55 22%, transparent 46%),
+    linear-gradient(135deg, #35383a, #27292b);
+}
+
+.theme-browser-shot {
+  display: grid;
+  grid-template-columns: 90px minmax(280px, 540px);
+  width: min(760px, 100%);
+  min-height: 250px;
+  overflow: hidden;
+  border: 1px solid #ffffff55;
+  border-radius: 8px;
+  background: #edf5f2;
+  box-shadow: 0 0 42px #d8fff2aa;
+}
+
+.theme-browser-shot aside {
+  display: grid;
+  align-content: start;
+  gap: 13px;
+  padding: 20px;
+  background: #f7fbfa;
+}
+
+.theme-browser-shot aside i,
+.theme-browser-shot header span,
+.theme-browser-shot section b,
+.theme-browser-shot footer i {
+  display: block;
+  border-radius: 999px;
+  background: #cfdad7;
+}
+
+.theme-browser-shot aside i {
+  height: 12px;
+}
+
+.theme-browser-shot main {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+}
+
+.theme-browser-shot header {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.theme-browser-shot header span {
+  width: 70px;
+  height: 10px;
+}
+
+.theme-browser-shot section {
+  display: grid;
+  gap: 12px;
+  min-height: 110px;
+  padding: 24px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #252628, #453066);
+}
+
+.theme-browser-shot section b:first-child {
+  width: 55%;
+  height: 18px;
+  background: #9af3df;
+}
+
+.theme-browser-shot section b:last-child {
+  width: 36%;
+  height: 12px;
+  background: #ffffffaa;
+}
+
+.theme-browser-shot footer {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.theme-browser-shot footer i {
+  height: 54px;
+  border-radius: 8px;
+}
+
+.store-design-copy {
+  display: grid;
+  gap: 14px;
+  padding: 0 24px 26px;
+}
+
+.store-design-copy h2,
+.store-design-copy p {
+  margin: 0;
+}
+
+.store-design-copy h2 {
+  color: var(--mint);
+  font-size: 26px;
+}
+
+.store-design-copy p {
+  color: var(--muted);
+}
+
+.store-benefits {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.store-benefits span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-weight: 850;
+}
+
+.store-benefits svg {
+  color: var(--mint);
+}
+
+.store-design-copy button,
+.store-admin-card button,
+.theme-market-grid button {
+  justify-self: start;
+  min-height: 40px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 16px;
+  color: #123330;
+  background: var(--mint);
+  font-weight: 850;
+}
+
+.theme-market-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.theme-market-grid article,
+.store-admin-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.theme-market-grid article {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.theme-market-grid h3,
+.theme-market-grid p,
+.store-admin-card h1,
+.store-admin-card p {
+  margin: 0;
+}
+
+.theme-market-grid p,
+.store-admin-card p {
+  color: var(--muted);
+}
+
+.store-admin-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px;
+}
+
+.store-admin-card span {
+  color: var(--mint);
+  font-weight: 850;
+}
+
 .orders-quick-dialog {
   align-self: start;
   justify-self: center;
@@ -3731,6 +3938,11 @@ button {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .store-benefits,
+  .theme-market-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .public-sections,
   .public-trust {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3860,9 +4072,24 @@ button {
   .metric-grid,
   .settings-grid,
   .apps-grid,
+  .store-benefits,
+  .theme-market-grid,
   .preview-products,
   .mega-menu {
     grid-template-columns: 1fr;
+  }
+
+  .theme-browser-shot {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-browser-shot aside {
+    display: none;
+  }
+
+  .store-admin-card {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .record-list button {
