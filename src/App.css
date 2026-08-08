@@ -1114,6 +1114,25 @@ button {
   display: grid;
 }
 
+.settings-nav-scroll {
+  max-height: calc(100svh - 245px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: 10px;
+  scrollbar-width: thin;
+}
+
+.settings-nav-scroll::-webkit-scrollbar,
+.side-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.settings-nav-scroll::-webkit-scrollbar-thumb,
+.side-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #ffffff2c;
+}
+
 .settings-drawer nav button {
   display: flex;
   align-items: center;
@@ -1901,7 +1920,9 @@ button {
 .side-list {
   position: sticky;
   top: 154px;
-  overflow: hidden;
+  max-height: calc(100svh - 174px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .side-list h3 {

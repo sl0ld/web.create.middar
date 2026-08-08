@@ -1047,7 +1047,7 @@ function SettingsDrawer({
       <aside>
         <h2>Settings</h2>
         <label><Search size={17} /><input placeholder="Search settings" /></label>
-        <nav>
+        <nav className="settings-nav-scroll">
           {settingsCatalog.map((item) => (
             <button className={activeSetting === item.key ? 'active' : ''} key={item.key} onClick={() => setActiveSetting(item.key)}>
               <span><SettingIcon name={item.key} /></span>
@@ -2083,6 +2083,7 @@ function SettingsPage({ initialSetting = 'Your profile' }: { initialSetting?: st
 
 function SettingsContent({ detail, compact = false }: { detail: typeof settingsCatalog[number]; compact?: boolean }) {
   const [activeControl, setActiveControl] = useState<string | null>(null)
+  const [activeCard, setActiveCard] = useState<string>('Configuration')
   const deepControls = settingsDeepControls[detail.key] ?? []
   const cards = [
     ['Configuration', detail.summary, 'Open'],
@@ -2124,13 +2125,20 @@ function SettingsContent({ detail, compact = false }: { detail: typeof settingsC
       )}
       <div className="settings-card-list">
         {cards.map(([title, body, action]) => (
-          <article key={title}>
+          <article className={activeCard === title ? 'active-card' : ''} key={title}>
             <b>{title}</b>
             <p>{body}</p>
-            <button>{action}</button>
+            <button onClick={() => setActiveCard(title)}>{action}</button>
           </article>
         ))}
       </div>
+      <Panel title={activeCard}>
+        <Table rows={[
+          ['Area', detail.title, 'Selected'],
+          ['Mode', activeCard === 'Activity' ? 'Log preview' : activeCard === 'Access & visibility' ? 'Visibility rules' : 'Configuration panel'],
+          ['Status', activeCard === 'Activity' ? 'No recent changes' : 'Ready'],
+        ]} />
+      </Panel>
       <div className="settings-toggles">
         {detail.toggles.map((toggle, index) => (
           <label key={toggle}>{toggle}<input type="checkbox" defaultChecked={index === 0} /></label>
