@@ -15,11 +15,14 @@ import {
   MessageCircle,
   Megaphone,
   Menu,
+  MoreHorizontal,
   Palette,
   Plus,
+  RefreshCcw,
   Search,
   Settings,
   ShieldCheck,
+  SlidersHorizontal,
   ShoppingBag,
   Sparkles,
   Store,
@@ -27,6 +30,7 @@ import {
   UserRound,
   Users,
   WalletCards,
+  X,
 } from 'lucide-react'
 import './App.css'
 
@@ -1340,9 +1344,11 @@ function DynamicPage({
   }
 
   if (route === 'orders') {
+    if (pageTitle === 'All orders') return <Orders />
+
     return (
       <PageShell crumb="Orders" title={pageTitle} aside={<FilterList title="Orders" items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
-        {pageTitle === 'All orders' ? <SplitEmpty title="No order selected" action="Filter" /> : <PagePreview title={pageTitle} group={group} link={pageTitle} />}
+        <PagePreview title={pageTitle} group={group} link={pageTitle} />
       </PageShell>
     )
   }
@@ -1636,6 +1642,187 @@ function CampaignBuilderPage() {
 
 function Orders() {
   const [activeStatus, setActiveStatus] = useState(orderStatuses[0])
+  const [selectedOrder, setSelectedOrder] = useState<(typeof sampleOrders)[number] | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
+  const [statusesOpen, setStatusesOpen] = useState(false)
+  const [listCollapsed, setListCollapsed] = useState(false)
+  const [activeFilter, setActiveFilter] = useState('Saved filters')
+  const visibleOrders = sampleOrders.filter((order) => {
+    const matchesStatus = activeStatus === orderStatuses[0] || order.status === activeStatus
+    const text = `${order.id} ${order.customer} ${order.channel}`.toLowerCase()
+    return matchesStatus && text.includes(searchTerm.toLowerCase())
+  })
+  const isEmpty = visibleOrders.length === 0
+  const content = (
+    <div className="orders-workspace">
+      <section className="orders-commandbar">
+        <label>
+          <Search size={19} />
+          <input
+            value={searchTerm}
+            onChange={(event) => {
+              setSearchTerm(event.target.value)
+              setSelectedOrder(null)
+            }}
+            placeholder="Search by order number, tracking number, or customer name"
+          />
+          <span>i</span>
+        </label>
+        <button className={filterOpen ? 'active' : ''} onClick={() => setFilterOpen(true)}><Filter size={18} /> Filter</button>
+      </section>
+
+      <section className={listCollapsed ? 'orders-board collapsed' : 'orders-board'}>
+        <aside className="orders-status-list">
+          {orderStatuses.map((status, index) => {
+            const count = status === orderStatuses[0] ? sampleOrders.length : sampleOrders.filter((order) => order.status === status).length
+            return (
+              <button className={activeStatus === status ? 'active' : ''} key={status} onClick={() => { setActiveStatus(status); setSelectedOrder(null) }}>
+                <i style={{ background: orderStatusColor(index) }} />
+                <span>{status}</span>
+                <b>{count}</b>
+              </button>
+            )
+          })}
+          <button className="customize-statuses" onClick={() => setStatusesOpen(true)}><SlidersHorizontal size={17} /> Customize statuses</button>
+        </aside>
+
+        <button className="orders-collapse" aria-label="Collapse order statuses" onClick={() => setListCollapsed(!listCollapsed)}>
+          {listCollapsed ? '>' : '<'}
+        </button>
+
+        <section className="orders-results">
+          {isEmpty ? (
+            <Empty title="No results found" body="Try searching with different keywords or browse other sections." />
+          ) : (
+            <div className="orders-list">
+              {visibleOrders.map((order) => (
+                <button className={selectedOrder?.id === order.id ? 'active' : ''} key={order.id} onClick={() => setSelectedOrder(order)}>
+                  <span><b>{order.id}</b><small>{order.time}</small></span>
+                  <span>{order.customer}<small>{order.channel}</small></span>
+                  <strong>{order.total}</strong>
+                  <em>{order.status}</em>
+                </button>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <aside className="orders-detail-panel">
+          {selectedOrder ? (
+            <>
+              <div className="detail-head">
+                <div><span>Order details</span><h2>{selectedOrder.id}</h2></div>
+                <em>{selectedOrder.status}</em>
+              </div>
+              <Table rows={[
+                ['Customer', selectedOrder.customer, selectedOrder.channel],
+                ['Total', selectedOrder.total, 'Bahrain'],
+                ['Payment', selectedOrder.status === 'بإنتظار الدفع' ? 'Pending' : 'Paid', 'Visual only'],
+                ['Timeline', selectedOrder.time, 'Ready'],
+              ]} />
+              <div className="detail-actions"><button>Print invoice</button><button>Change status</button><button>Message customer</button></div>
+            </>
+          ) : (
+            <Empty title="No orders selected" body="Select an order from the list to preview customer, payment, and timeline details here." />
+          )}
+        </aside>
+      </section>
+
+      <div className="orders-secondary-actions">
+        <button onClick={() => setStatusesOpen(true)}><SlidersHorizontal size={17} /> Customize statuses</button>
+        <button onClick={() => setMoreOpen(!moreOpen)}><MoreHorizontal size={18} /> More</button>
+        <button aria-label="Refresh orders" onClick={() => { setSelectedOrder(null); setSearchTerm('') }}><RefreshCcw size={17} /></button>
+        {moreOpen && (
+          <div className="orders-more-menu">
+            {['Bookings', 'Custom fields', 'Cart options', 'Export templates', 'Deleted orders', 'Auto tags'].map((item) => (
+              <button key={item}>{item}</button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {filterOpen && (
+        <OrdersFilterDialog activeFilter={activeFilter} setActiveFilter={setActiveFilter} onClose={() => setFilterOpen(false)} />
+      )}
+      {statusesOpen && <OrdersQuickDialog title="Customize statuses" onClose={() => setStatusesOpen(false)} />}
+    </div>
+  )
+
+  return content
+}
+
+function orderStatusColor(index: number) {
+  return ['#9af3df', '#ff5c7a', '#ff5c7a', '#5f6368', '#37b7ff', '#17a9e6', '#4b9dff', '#02b882', '#55dfd1', '#ff4f70', '#ff637d', '#ff637d', '#ffb224', '#f0f2f1'][index] ?? '#9af3df'
+}
+
+function OrdersFilterDialog({
+  activeFilter,
+  setActiveFilter,
+  onClose,
+}: {
+  activeFilter: string
+  setActiveFilter: (filter: string) => void
+  onClose: () => void
+}) {
+  const filters = ['Country & City', 'Show External Orders', 'Select The Affiliate Marketer', 'Affiliate marketing orders', 'Transferred to Zatca', 'My assigned orders', 'Quick Donation', 'Market', 'Shipping Policy Status', 'Shipping Company', "Didn't get synched with accounting services", 'Shipping type', 'Coupons', 'branches', 'Assigned Employee', 'tags', 'Order Type', 'Order Date', 'order sort', 'Payment Method', 'Unread Orders', 'Order Status', 'Pickup From Branch', 'products', 'Sales channels']
+
+  return (
+    <section className="orders-dialog-backdrop">
+      <dialog className="orders-filter-dialog" open>
+        <header><h2>Filter</h2><button aria-label="Close filter" onClick={onClose}><X size={18} /></button></header>
+        <main>
+          <article className="saved-filter-card">
+            <SlidersHorizontal size={22} />
+            <div><h3>Saved filters</h3><p>Save this filter setup to make filtering easier next time.</p></div>
+          </article>
+          <div className="orders-filter-list">
+            {filters.map((filter) => (
+              <button className={activeFilter === filter ? 'active' : ''} key={filter} onClick={() => setActiveFilter(filter)}>
+                <span>{filter}</span>
+                <ChevronDown size={17} />
+              </button>
+            ))}
+          </div>
+        </main>
+        <footer>
+          <button disabled>View results</button>
+          <button disabled>Save filter</button>
+          <button onClick={() => setActiveFilter('Saved filters')}>Reset</button>
+        </footer>
+      </dialog>
+    </section>
+  )
+}
+
+function OrdersQuickDialog({ title, onClose }: { title: string; onClose: () => void }) {
+  const isStatus = title === 'Customize statuses'
+  return (
+    <section className="orders-dialog-backdrop">
+      <dialog className="orders-quick-dialog" open>
+        <header><h2>{title}</h2><button aria-label={`Close ${title}`} onClick={onClose}><X size={18} /></button></header>
+        {isStatus ? (
+          <div className="status-editor-list">
+            {orderStatuses.slice(1).map((status, index) => (
+              <label key={status}><i style={{ background: orderStatusColor(index + 1) }} /> <span>{status}</span><input type="checkbox" defaultChecked /></label>
+            ))}
+          </div>
+        ) : (
+          <div className="quick-order-grid">
+            <Label title="Customer" helper="Search or add customer" placeholder="Customer name or phone" />
+            <Label title="Product" helper="Add product to the draft order" placeholder="Search product" />
+            <Label title="Payment" helper="Visual setup only" placeholder="Payment method" />
+          </div>
+        )}
+        <footer><button onClick={onClose}>Cancel</button><button onClick={onClose}>{isStatus ? 'Save statuses' : 'Create order'}</button></footer>
+      </dialog>
+    </section>
+  )
+}
+
+function LegacyOrders() {
+  const [activeStatus, setActiveStatus] = useState(orderStatuses[0])
   const [selectedOrder, setSelectedOrder] = useState(sampleOrders[0])
   const visibleOrders = activeStatus === orderStatuses[0] ? sampleOrders : sampleOrders.filter((order) => order.status === activeStatus)
   const ordersToShow = visibleOrders.length ? visibleOrders : sampleOrders.slice(0, 2)
@@ -1676,6 +1863,8 @@ function Orders() {
     </PageShell>
   )
 }
+
+void LegacyOrders
 
 function Products() {
   const initialFilter = () => {
