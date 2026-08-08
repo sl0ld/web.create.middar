@@ -108,6 +108,34 @@ const reportMenu = ['Performance summary', 'Sales', 'Orders', 'Customers', 'Visi
 const carriers = ['Aramex', 'Smsa', 'DHL Express', 'Fetchr', 'J&T Express', 'RedBox']
 const apps = ['Offers Bundles Upsell Cross sell', 'Zud, Increase Average Order Value', 'InstaCart - Shoppable Instagram Feed', 'Alfinder', 'Bousla', 'Wallet Plus', 'WhatsApp Chat Button', 'Rawaj Sales Boost Widgets']
 const themes = ['وسام', 'إتقان', 'زاد', 'ليما', 'رايد', 'مواسم']
+const sampleOrders = [
+  { id: '#1007', customer: 'سارة علي', total: '24.500 BHD', status: 'بإنتظار الدفع', channel: 'المتجر الإلكتروني', time: 'قبل 8 دقائق' },
+  { id: '#1006', customer: 'محمد حسن', total: '11.000 BHD', status: 'قيد التنفيذ', channel: 'Instagram', time: 'اليوم 02:15 م' },
+  { id: '#1005', customer: 'فاطمة جاسم', total: '38.750 BHD', status: 'جاري التوصيل', channel: 'المتجر الإلكتروني', time: 'أمس' },
+  { id: '#1004', customer: 'Khalid Store', total: '92.000 BHD', status: 'مكتمل', channel: 'نقطة البيع', time: '05 Aug' },
+]
+const sampleProducts = [
+  { name: 'عباية لينن', sku: 'MD-ABY-001', price: '18.000 BHD', stock: '24', status: 'For sale' },
+  { name: 'عطر مدار', sku: 'MD-PRF-014', price: '12.500 BHD', stock: '8', status: 'Discounted' },
+  { name: 'بطاقة هدية', sku: 'MD-GFT-050', price: '5.000 BHD', stock: 'Digital', status: 'Hidden' },
+  { name: 'مجموعة تغليف', sku: 'MD-PKG-003', price: '2.000 BHD', stock: '3', status: 'Nearly out' },
+]
+const setupTasks = [
+  ['Add a support number', 'Add', 'Required before launch'],
+  ['Set up your domain', 'Set up', 'Default domain is active'],
+  ['Add your first product', 'Add', '4 draft products ready'],
+  ['Set your pickup location', 'Set', 'Bahrain branch missing'],
+  ['Design your store', 'Design', 'Theme editor ready'],
+  ['Verify your store', 'Verify', 'Required for payments'],
+]
+const paymentMethods = [
+  ['مدفوعات مدار', 'Requires verification', 'Activate'],
+  ['BenefitPay', 'Recommended for Bahrain', 'Set up'],
+  ['Apple Pay', 'Not connected', 'Activate'],
+  ['Tabby', 'Available after verification', 'View'],
+  ['Tamara', 'Available after verification', 'View'],
+  ['Bank transfer', 'Manual review', 'Set up'],
+]
 
 const specialPageDetails: Record<string, { badge?: string; title: string; body: string; locked?: boolean }> = {
   'Orders:Custom fields': {
@@ -1100,14 +1128,14 @@ function Alert() {
 }
 
 function Checklist() {
-  const steps = ['Add a support number', 'Set up your domain', 'Add your first product', 'Set your pickup location', 'Design your store', 'Verify your store']
   return (
     <div className="checklist">
-      {steps.map((step, index) => (
+      {setupTasks.map(([step, action, helper], index) => (
         <article key={step}>
           <span>{index + 2}</span>
           <b>{step}</b>
-          <button>{['Add', 'Set up', 'Add', 'Set', 'Design', 'Verify'][index]}</button>
+          <small>{helper}</small>
+          <button>{action}</button>
         </article>
       ))}
     </div>
@@ -1160,6 +1188,46 @@ function DynamicPage({
 
   if (pageKey === 'Online Store:Store design' || pageKey === 'Online Store:Theme Marketplace' || pageKey === 'Online Store:Manage themes') {
     return <ThemeEditorPage />
+  }
+
+  if (pageKey === 'Online Store:Domain') {
+    return <DomainPage />
+  }
+
+  if (pageKey === 'Online Store:Information pages' || pageKey === 'Online Store:Custom URLs') {
+    return <InformationPagesPage activeView={pageTitle} />
+  }
+
+  if (route === 'payments') {
+    return (
+      <PageShell crumb="Payments" title={pageTitle} aside={<FilterList title="Payments" items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
+        <Payments />
+      </PageShell>
+    )
+  }
+
+  if (route === 'shipping') {
+    return (
+      <PageShell crumb="Shipping" title={pageTitle} aside={<FilterList title="Shipping" items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
+        <Shipping />
+      </PageShell>
+    )
+  }
+
+  if (route === 'apps') {
+    return (
+      <PageShell crumb="Apps & Logs" title={pageTitle} aside={<FilterList title="Apps & Logs" items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
+        <Apps />
+      </PageShell>
+    )
+  }
+
+  if (route === 'logs') {
+    return (
+      <PageShell crumb="Apps & Logs" title={pageTitle} aside={<FilterList title="Apps & Logs" items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
+        <Logs />
+      </PageShell>
+    )
   }
 
   if (detail) {
@@ -1468,12 +1536,43 @@ function CampaignBuilderPage() {
 
 function Orders() {
   const [activeStatus, setActiveStatus] = useState(orderStatuses[0])
-  const emptyTitle = activeStatus === orderStatuses[0] ? 'No order selected' : `No ${activeStatus} order selected`
+  const [selectedOrder, setSelectedOrder] = useState(sampleOrders[0])
+  const visibleOrders = activeStatus === orderStatuses[0] ? sampleOrders : sampleOrders.filter((order) => order.status === activeStatus)
+  const ordersToShow = visibleOrders.length ? visibleOrders : sampleOrders.slice(0, 2)
 
   return (
     <PageShell crumb="Orders" title="All orders" aside={<FilterList title="All orders" items={orderStatuses} activeItem={activeStatus} onItemClick={setActiveStatus} />}>
       <LockedFeature title="Order Editing" body="Manage your orders, with a button press" />
-      <SplitEmpty title={emptyTitle} action="Filter" context={activeStatus} />
+      <section className="products-toolbar">
+        <label><Search size={17} /><input placeholder="Search by order number, customer, or phone" /></label>
+        <button className="filter"><Filter size={17} /> Filter</button>
+        <select defaultValue="newest"><option value="newest">Newest first</option><option value="total">Highest total</option><option value="status">By status</option></select>
+      </section>
+      <div className="records-layout">
+        <section className="record-list">
+          {ordersToShow.map((order) => (
+            <button className={selectedOrder.id === order.id ? 'active' : ''} key={order.id} onClick={() => setSelectedOrder(order)}>
+              <span><b>{order.id}</b><small>{order.time}</small></span>
+              <span>{order.customer}<small>{order.channel}</small></span>
+              <strong>{order.total}</strong>
+              <em>{order.status}</em>
+            </button>
+          ))}
+        </section>
+        <aside className="record-detail">
+          <div className="detail-head">
+            <div><span>Order details</span><h2>{selectedOrder.id}</h2></div>
+            <em>{selectedOrder.status}</em>
+          </div>
+          <Table rows={[
+            ['Customer', selectedOrder.customer, selectedOrder.channel],
+            ['Total', selectedOrder.total, 'Bahrain'],
+            ['Payment', selectedOrder.status === 'بإنتظار الدفع' ? 'Pending' : 'Paid', 'Visual only'],
+            ['Timeline', selectedOrder.time, 'Ready'],
+          ]} />
+          <div className="detail-actions"><button>Print invoice</button><button>Change status</button><button>Message customer</button></div>
+        </aside>
+      </div>
     </PageShell>
   )
 }
@@ -1484,6 +1583,7 @@ function Products() {
     return productFilters.find((item) => productFilterStatus[item] === status) ?? productFilters[0]
   }
   const [activeFilter, setActiveFilter] = useState(initialFilter)
+  const [selectedProduct, setSelectedProduct] = useState(sampleProducts[0])
   const [searchTerm, setSearchTerm] = useState('')
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
   const setProductFilter = (item: string) => {
@@ -1519,7 +1619,33 @@ function Products() {
         <button>{activeFilter}</button>
         {searchTerm && <button>Search: {searchTerm}</button>}
       </section>
-      <SplitEmpty title={`No ${activeFilter.toLowerCase()} selected`} action="Filter" context={activeFilter} />
+      <div className="records-layout">
+        <section className="record-list">
+          {sampleProducts
+            .filter((product) => `${product.name} ${product.sku}`.toLowerCase().includes(searchTerm.toLowerCase()))
+            .map((product) => (
+              <button className={selectedProduct.sku === product.sku ? 'active' : ''} key={product.sku} onClick={() => setSelectedProduct(product)}>
+                <span><b>{product.name}</b><small>{product.sku}</small></span>
+                <span>{product.price}<small>Stock: {product.stock}</small></span>
+                <em>{product.status}</em>
+              </button>
+            ))}
+        </section>
+        <aside className="record-detail">
+          <div className="detail-head">
+            <div><span>Product details</span><h2>{selectedProduct.name}</h2></div>
+            <em>{selectedProduct.status}</em>
+          </div>
+          <div className="product-preview-tile"><ShoppingBag size={44} /><b>{selectedProduct.price}</b></div>
+          <Table rows={[
+            ['SKU', selectedProduct.sku, 'Editable'],
+            ['Inventory', selectedProduct.stock, 'Tracked'],
+            ['Status', selectedProduct.status, activeFilter],
+            ['SEO', 'Ready preview', 'Draft'],
+          ]} />
+          <div className="detail-actions"><button>Edit product</button><button>Duplicate</button><button>Hide in store</button></div>
+        </aside>
+      </div>
     </PageShell>
   )
 }
@@ -1599,6 +1725,74 @@ function ThemeEditorPage() {
   )
 }
 
+function DomainPage() {
+  const [domainState, setDomainState] = useState('default')
+
+  return (
+    <PageShell crumb="Online Store" title="Domain" aside={<FilterList title="Domain setup" items={['Default domain', 'Custom domain', 'DNS records', 'Redirects', 'SSL']} activeItem={domainState === 'default' ? 'Default domain' : 'Custom domain'} onItemClick={(item) => setDomainState(item === 'Default domain' ? 'default' : 'custom')} />}>
+      <section className="form-workspace">
+        <div className="form-main">
+          <FeatureHero title="Domain" badge="Available on your plan" body="Prepare the store URL, custom domain, SSL, and redirects before real DNS connection." action="Connect domain" />
+          <Panel title="Default store link">
+            <div className="domain-card">
+              <span>https://saeed-store.middar.shop</span>
+              <button onClick={() => setDomainState('default')}>Copy link</button>
+            </div>
+          </Panel>
+          <Panel title="Custom domain">
+            <div className="form-grid">
+              <Label title="Domain name" helper="Example: mystore.com" placeholder="yourdomain.com" />
+              <Label title="Provider" helper="Where the domain was purchased" placeholder="Namecheap, GoDaddy, Cloudflare" />
+            </div>
+          </Panel>
+        </div>
+        <aside className="form-side">
+          <Panel title="DNS checklist">
+            <Table rows={[['A record', 'Pending'], ['CNAME', 'Ready'], ['SSL', 'Will activate after DNS'], ['Redirect www', 'Enabled']]} />
+          </Panel>
+        </aside>
+      </section>
+    </PageShell>
+  )
+}
+
+function InformationPagesPage({ activeView }: { activeView: string }) {
+  const [selectedPage, setSelectedPage] = useState('About us')
+  const pages = ['About us', 'Privacy policy', 'Return policy', 'Shipping policy', 'Contact us']
+
+  return (
+    <PageShell crumb="Online Store" title={activeView} aside={<FilterList title="Pages" items={pages} activeItem={selectedPage} onItemClick={setSelectedPage} />}>
+      <div className="records-layout">
+        <section className="record-list">
+          {pages.map((pageName, index) => (
+            <button className={selectedPage === pageName ? 'active' : ''} key={pageName} onClick={() => setSelectedPage(pageName)}>
+              <span><b>{pageName}</b><small>{index < 2 ? 'Published' : 'Draft'}</small></span>
+              <em>{index < 2 ? 'Visible' : 'Hidden'}</em>
+            </button>
+          ))}
+        </section>
+        <aside className="record-detail">
+          <div className="detail-head">
+            <div><span>Page editor</span><h2>{selectedPage}</h2></div>
+            <em>Visual draft</em>
+          </div>
+          <label className="field">
+            <span>Page title <em>Optional</em></span>
+            <small>Shown in storefront navigation and SEO.</small>
+            <input defaultValue={selectedPage} />
+          </label>
+          <label className="field">
+            <span>Page content <em>Optional</em></span>
+            <small>Draft content only, backend later.</small>
+            <textarea defaultValue="Write page content here..." />
+          </label>
+          <div className="detail-actions"><button>Save draft</button><button>Preview page</button><button>Publish</button></div>
+        </aside>
+      </div>
+    </PageShell>
+  )
+}
+
 function StoreDesign() {
   const [activeTheme, setActiveTheme] = useState(themes[0])
   return (
@@ -1646,11 +1840,30 @@ function Staff() {
 
 function Reports() {
   const [activeReport, setActiveReport] = useState(reportMenu[0])
+  const metrics = activeReport === 'Shipping'
+    ? [['Delivered orders', '18'], ['Avg. delivery', '1.8 days'], ['Shipping cost', '42.500 BHD'], ['Issues', '1']]
+    : activeReport === 'Inventory'
+      ? [['Available products', '43'], ['Low stock', '3'], ['Out of stock', '1'], ['Stock value', '812 BHD']]
+      : [['Gross sales', '166.250 BHD'], ['Net sales', '154.800 BHD'], ['Orders', '24'], ['Conversion', '2.8%']]
 
   return (
     <PageShell crumb="Reports" title="Store performance" aside={<FilterList title="Reports" items={reportMenu} footer="Manage reports" activeItem={activeReport} onItemClick={setActiveReport} />}>
       <div className="date-card">Jul 2026, 28 - Aug 2026, 04 <button>...</button></div>
-      <MetricGrid metrics={[[`${activeReport} gross`, ''], ['Net sales', ''], ['Total costs', ''], ['Net profit', '']]} skeleton />
+      <MetricGrid metrics={metrics} />
+      <div className="analytics-layout">
+        <Panel title={`${activeReport} trend`}>
+          <div className="bar-chart">
+            {[34, 58, 46, 72, 64, 88, 53].map((height, index) => <span style={{ height: `${height}%` }} key={index} />)}
+          </div>
+        </Panel>
+        <Panel title="Top insights">
+          <Table rows={[
+            ['Best channel', 'Online store', '68% of sales'],
+            ['Best product', 'عباية لينن', '18 orders'],
+            ['Needs action', '3 products low stock', 'Open inventory'],
+          ]} />
+        </Panel>
+      </div>
     </PageShell>
   )
 }
@@ -1668,22 +1881,29 @@ function Support() {
 
 function Shipping() {
   const [activeShipping, setActiveShipping] = useState('All carriers')
+  const [selectedCarrier, setSelectedCarrier] = useState(carriers[0])
 
   return (
     <div className="page-stack">
       <FeatureHero title="Manage shipping" badge="Available on your plan" body="A fleet of trusted local and global couriers ready to deliver your orders." action="App Store" />
       <SelectableTabs items={['All carriers', 'Standard shipping', 'Express shipping', 'Economy shipping', 'International shipping', 'Freight shipping']} activeItem={activeShipping} onChange={setActiveShipping} />
-      <Panel title={activeShipping}>
-        <p>Showing carriers and setup states for {activeShipping.toLowerCase()}.</p>
-      </Panel>
+      <div className="analytics-layout">
+        <Panel title={activeShipping}>
+          <Table rows={[['Default origin', 'Manama branch', 'Needs pickup time'], ['COD', 'Disabled', 'Can be enabled'], ['Free shipping', 'Over 30 BHD', 'Active']]} />
+        </Panel>
+        <Panel title={`${selectedCarrier} setup`}>
+          <Table rows={[['Status', selectedCarrier === 'Aramex' ? 'Connected' : 'Not connected'], ['Coverage', 'Bahrain + GCC'], ['Action', 'Configure rates']]} />
+        </Panel>
+      </div>
       <section className="carrier-grid">
-        {carriers.map((carrier) => <Carrier key={carrier} name={carrier} />)}
+        {carriers.map((carrier) => <Carrier active={carrier === selectedCarrier} key={carrier} name={carrier} onSelect={() => setSelectedCarrier(carrier)} />)}
       </section>
     </div>
   )
 }
 
 function Payments() {
+  const [activeMethod, setActiveMethod] = useState(paymentMethods[0][0])
   return (
     <div className="page-stack">
       <LockedFeature title="مدفوعات مدار" body="Make checkout easier for your customers. Enable online payments and let customers pay securely through your store." />
@@ -1693,26 +1913,39 @@ function Payments() {
         <button>Verify now</button>
       </section>
       <section className="payment-grid">
-        {['مدفوعات مدار', 'Tabby', 'Tamara', 'Digital wallets', 'PayPal', 'Bank transfer'].map((method) => <article key={method}><WalletCards /><b>{method}</b><button>Activate</button></article>)}
+        {paymentMethods.map(([method, state, action]) => (
+          <article className={activeMethod === method ? 'active-card' : ''} key={method}>
+            <WalletCards /><b>{method}</b><p>{state}</p><button onClick={() => setActiveMethod(method)}>{action}</button>
+          </article>
+        ))}
       </section>
+      <Panel title={`${activeMethod} details`}>
+        <Table rows={[['Availability', activeMethod.includes('مدار') ? 'After verification' : 'Preview ready'], ['Settlement', '2-5 business days'], ['Checkout display', 'Visible after activation']]} />
+      </Panel>
     </div>
   )
 }
 
 function Apps() {
+  const [activeApp, setActiveApp] = useState(apps[0])
+  const [activeCategory, setActiveCategory] = useState('All')
   return (
     <div className="page-stack">
       <section className="apps-hero"><h1>Power your store with the right tools</h1><button>Browse all categories</button></section>
+      <SelectableTabs items={['All', 'Marketing', 'Sales', 'Shipping', 'Accounting', 'Installed']} activeItem={activeCategory} onChange={setActiveCategory} />
       <section className="apps-grid">
         {apps.map((app, index) => (
-          <article key={app}>
+          <article className={activeApp === app ? 'active-card' : ''} key={app}>
             <span>Marketing</span>
             <h3>{app}</h3>
             <p>{index % 2 ? 'Start From 48.08 AED / Monthly' : 'Free Trial 7 Days'}</p>
-            <button>View</button>
+            <button onClick={() => setActiveApp(app)}>View</button>
           </article>
         ))}
       </section>
+      <Panel title={`${activeApp} app page`}>
+        <Table rows={[['Category', activeCategory, 'Selected'], ['Plan', 'Free trial available', 'Visual only'], ['Permissions', 'Products, orders, customers'], ['Status', 'Ready to install']]} />
+      </Panel>
     </div>
   )
 }
@@ -1884,13 +2117,14 @@ function Table({ rows }: { rows: string[][] }) {
   return <div className="table">{rows.map((row) => <div key={row.join('-')}>{row.map((cell) => <span key={cell}>{cell}</span>)}</div>)}</div>
 }
 
-function Carrier({ name }: { name: string }) {
+function Carrier({ name, active, onSelect }: { name: string; active?: boolean; onSelect?: () => void }) {
   return (
-    <article className="carrier-card">
+    <article className={active ? 'carrier-card active-card' : 'carrier-card'}>
       <div><Truck /><b>{name}</b><small>4 (4085)</small></div>
-      <p><span>Carrier status</span> Inactive</p>
-      <p><span>Delivery time</span> الشحن 2 - 7 ايام عمل</p>
-      <p><span>Shipping type</span> عادي</p>
+      <p><span>Carrier status</span> {name === 'Aramex' ? 'Connected' : 'Inactive'}</p>
+      <p><span>Delivery time</span> 2 - 7 business days</p>
+      <p><span>Shipping type</span> Standard</p>
+      <button onClick={onSelect}>{active ? 'Selected' : 'Configure'}</button>
     </article>
   )
 }
