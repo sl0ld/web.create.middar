@@ -4,6 +4,7 @@ import {
   BarChart3,
   Bell,
   Boxes,
+  CalendarDays,
   ChevronDown,
   ClipboardList,
   CreditCard,
@@ -12,6 +13,7 @@ import {
   Grid3X3,
   Headphones,
   Home,
+  Info,
   MessageCircle,
   Megaphone,
   Menu,
@@ -1416,12 +1418,9 @@ function DynamicPage({
   }
 
   if (route === 'reports') {
-    return (
-      <PageShell crumb="Reports" title={pageTitle} aside={<FilterList title="Reports" items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
-        <div className="date-card">Jul 2026, 28 - Aug 2026, 04 <button>...</button></div>
-        <MetricGrid metrics={[['Gross sales', ''], ['Orders', ''], ['Conversion', ''], ['Visits', '']]} skeleton />
-      </PageShell>
-    )
+    void groupLinks
+    void openSidePage
+    return <Reports activePage={pageTitle} />
   }
 
   return (
@@ -2530,7 +2529,7 @@ function Staff() {
   )
 }
 
-function Reports() {
+function LegacyReports() {
   const [activeReport, setActiveReport] = useState(reportMenu[0])
   const metrics = activeReport === 'Shipping'
     ? [['Delivered orders', '18'], ['Avg. delivery', '1.8 days'], ['Shipping cost', '42.500 BHD'], ['Issues', '1']]
@@ -2557,6 +2556,165 @@ function Reports() {
         </Panel>
       </div>
     </PageShell>
+  )
+}
+
+void LegacyReports
+
+function Reports({ activePage = 'Store performance' }: { activePage?: string }) {
+  const [activeReport, setActiveReport] = useState(reportMenu[0])
+  const reportMetrics = [
+    ['Gross sales', '0 AED', 'Total order value before returns and discounts.'],
+    ['Net sales', '0 AED', 'Sales after discounts, returns, and cancellations.'],
+    ['Total costs', '0 AED', 'Product, payment, and shipping costs.'],
+    ['Net profit', '0 AED', 'Estimated profit after recorded costs.'],
+  ]
+  const smartCards = [
+    ['Revenue opportunities', 'Track products and campaigns that can lift store revenue.'],
+    ['Customer behavior', 'See repeat visits, carts, and buyer segments in one view.'],
+    ['Operational signals', 'Surface fulfillment and stock actions before they become issues.'],
+  ]
+  const savedReports = ['Daily sales report', 'Orders by status', 'Top products', 'Shipping performance']
+
+  if (activePage === 'Create report') {
+    return (
+      <div className="reports-workspace">
+        <div className="marketing-breadcrumb"><span>Reports</span><b>Create report</b></div>
+        <section className="report-builder-card">
+          <div>
+            <span>Custom report</span>
+            <h1>Create report</h1>
+            <p>Build a visual report by choosing the data source, date range, and columns. Backend export is intentionally deferred for this frontend stage.</p>
+          </div>
+          <div className="report-builder-grid">
+            {['Report type', 'Date range', 'Columns', 'Delivery'].map((item, index) => (
+              <button className={index === 0 ? 'active' : ''} key={item}>
+                <b>{item}</b>
+                <small>{index === 0 ? 'Store performance' : 'Choose option'}</small>
+              </button>
+            ))}
+          </div>
+          <div className="report-builder-actions">
+            <button>Preview report</button>
+            <button className="primary">Create report</button>
+          </div>
+        </section>
+      </div>
+    )
+  }
+
+  if (activePage === 'Smart analytics') {
+    return (
+      <div className="reports-workspace">
+        <div className="marketing-breadcrumb"><span>Reports</span><b>Smart analytics</b></div>
+        <section className="smart-analytics-hero">
+          <div>
+            <span>Insights</span>
+            <h1>Smart analytics</h1>
+            <p>Analytics cards mirror Salla's decision-focused screen: compact insights, suggested actions, and clear empty states until store data exists.</p>
+          </div>
+          <button><Sparkles size={18} /> Generate insights</button>
+        </section>
+        <div className="smart-analytics-grid">
+          {smartCards.map(([title, body]) => (
+            <article key={title}>
+              <Sparkles size={21} />
+              <h3>{title}</h3>
+              <p>{body}</p>
+              <button>View details</button>
+            </article>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (activePage === 'Reports' || activePage === 'Manage reports') {
+    return (
+      <div className="reports-workspace">
+        <div className="marketing-breadcrumb"><span>Reports</span><b>{activePage === 'Manage reports' ? 'Manage reports' : 'Reports'}</b></div>
+        <section className="saved-reports-card">
+          <div className="saved-reports-head">
+            <div>
+              <h1>{activePage === 'Manage reports' ? 'Manage reports' : 'Reports'}</h1>
+              <p>Saved and scheduled reports appear here with the same compact control style used across the dashboard.</p>
+            </div>
+            <button><Plus size={18} /> Create report</button>
+          </div>
+          <div className="saved-report-list">
+            {savedReports.map((report, index) => (
+              <button key={report}>
+                <span>{report}</span>
+                <small>{index % 2 ? 'Scheduled weekly' : 'Manual report'}</small>
+                <MoreHorizontal size={18} />
+              </button>
+            ))}
+          </div>
+        </section>
+      </div>
+    )
+  }
+
+  return (
+    <div className="reports-workspace">
+      <div className="marketing-breadcrumb"><span>Reports</span><b>Store performance</b></div>
+      <div className="reports-layout">
+        <aside className="reports-side-list">
+          {reportMenu.map((item) => (
+            <button className={activeReport === item ? 'active' : ''} key={item} onClick={() => setActiveReport(item)}>
+              <span>{item}</span>
+              {item === 'Conversion rate' ? <b>Beta</b> : null}
+            </button>
+          ))}
+          <button className="manage" onClick={() => setActiveReport('Performance summary')}>Manage reports</button>
+        </aside>
+        <section className="reports-main">
+          <div className="reports-datebar">
+            <button><CalendarDays size={18} /> Jul 2026, 28 - Aug 2026, 04 <ChevronDown size={17} /></button>
+            <button aria-label="More report actions"><MoreHorizontal size={18} /></button>
+          </div>
+          <div className="reports-metric-grid">
+            {reportMetrics.map(([title, value, help]) => (
+              <article className="report-metric-card" key={title}>
+                <div>
+                  <h3>{title}</h3>
+                  <button aria-label={`${title} info`} title={help}><Info size={15} /></button>
+                </div>
+                <strong>{value}</strong>
+                <footer>
+                  <span className="report-change-pill">0%</span>
+                  <button aria-label={`Refresh ${title}`}><RefreshCcw size={14} /></button>
+                </footer>
+              </article>
+            ))}
+          </div>
+          <div className="reports-summary-grid">
+            <section className="reports-summary-card chart">
+              <div>
+                <h2>{activeReport}</h2>
+                <button><MoreHorizontal size={18} /></button>
+              </div>
+              <div className="report-empty-chart">
+                {[22, 38, 31, 48, 27, 42, 36].map((height, index) => <i style={{ height: `${height}%` }} key={index} />)}
+              </div>
+              <p>No performance data in this date range yet.</p>
+            </section>
+            <section className="reports-summary-card">
+              <div>
+                <h2>Report details</h2>
+                <button><Filter size={17} /></button>
+              </div>
+              <ul className="report-detail-list">
+                <li><span>Orders</span><b>0</b></li>
+                <li><span>Customers</span><b>0</b></li>
+                <li><span>Visits</span><b>0</b></li>
+                <li><span>Abandoned carts</span><b>0 AED</b></li>
+              </ul>
+            </section>
+          </div>
+        </section>
+      </div>
+    </div>
   )
 }
 
