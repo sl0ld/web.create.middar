@@ -70,7 +70,7 @@ const sections: Section[] = [
   { id: 'payments', label: 'Payments', icon: CreditCard, tabs: ['Payment methods', 'Wallet', 'Payment restrictions', 'Tax settings', 'Transactions', 'Store Verification'] },
   { id: 'apps', label: 'Apps & Tools', icon: AppWindow, tabs: ['App Store', 'My apps', 'Settings'] },
   { id: 'logs', label: 'Logs', icon: FileClock, tabs: ['SMS log', 'Activity history', 'Export log'] },
-  { id: 'settings', label: 'Settings', icon: Settings, tabs: ['Store settings', 'Account', 'Billing', 'Notifications', 'Security'] },
+  { id: 'settings', label: 'Settings', icon: Settings, tabs: ['Your profile', 'General', 'Store plan', 'Balance & billing', 'Payments', 'Notifications'] },
 ]
 
 const menuGroups: Array<[string, string[]]> = [
@@ -86,6 +86,7 @@ const menuGroups: Array<[string, string[]]> = [
   ['Shipping', ['Shipping & delivery', 'Shipping settings', 'Shipping routes', 'International readiness']],
   ['Payments', ['Payment methods', 'Wallet', 'Payment restrictions', 'Tax settings', 'Transactions', 'Store verification']],
   ['Apps & Logs', ['App Store', 'My apps', 'Experts', 'Webhooks', 'SMS log', 'Activity history', 'Export log']],
+  ['Settings', ['Your profile', 'General', 'Store plan', 'Balance & billing', 'Payments', 'Domain', 'Checkout', 'Taxes', 'Products', 'Orders', 'Shipping & delivery', 'Notifications', 'Installed apps']],
 ]
 
 const orderStatuses = ['All orders', 'محذوف', 'بإنتظار الدفع', 'بإنتظار المراجعة', 'قيد التنفيذ', 'تم التنفيذ', 'جاري التوصيل', 'تم التوصيل', 'تم الشحن', 'ملغي', 'مسترجع', 'قيد الإسترجاع', 'طلب عرض سعر', 'مكتمل']
@@ -135,6 +136,29 @@ const paymentMethods = [
   ['Tabby', 'Available after verification', 'View'],
   ['Tamara', 'Available after verification', 'View'],
   ['Bank transfer', 'Manual review', 'Set up'],
+]
+const settingsCatalog = [
+  { key: 'Your profile', title: 'Your profile', summary: 'Personal information, login devices, password, and account security.', rows: [['Owner', 'سعيد', 'Basic'], ['Email', 'mr.fks.r0@gmail.com', 'Not verified'], ['Language', 'English beta', 'Dark mode on']], toggles: ['English (Beta)', 'Dark mode', 'Two-factor authentication'] },
+  { key: 'General', title: 'General settings', summary: 'Store name, identity, contact information, and default country.', rows: [['Store name', 'مدار', 'Visible'], ['Country', 'Bahrain', 'Active'], ['Support email', 'support@middar.test', 'Draft']], toggles: ['Show store contact', 'Allow customer notes', 'Maintenance mode'] },
+  { key: 'Store plan', title: 'Store plan', summary: 'Current plan, upgrade cards, trial state, and subscription controls.', rows: [['Current plan', 'Basic', 'Active'], ['Trial', 'Not started', 'Available'], ['Next invoice', '0.000 BHD', 'Preview']], toggles: ['Annual billing', 'Plan recommendations', 'Usage alerts'] },
+  { key: 'Manage stores', title: 'Manage stores', summary: 'Switch between stores, create a new store, and manage ownership.', rows: [['Main store', 'مدار', 'Owner'], ['Sandbox store', 'Draft', 'Hidden'], ['Team stores', '0', 'Preview']], toggles: ['Show archived stores', 'Require owner approval', 'Store switch shortcut'] },
+  { key: 'Balance & billing', title: 'Balance & billing', summary: 'Wallet balance, invoices, receipts, and billing contacts.', rows: [['Balance', '0.000 BHD', 'Low'], ['Last invoice', 'No invoices', 'Empty'], ['Billing email', 'mr.fks.r0@gmail.com', 'Draft']], toggles: ['Auto recharge', 'Invoice email copy', 'Billing alerts'] },
+  { key: 'Payments', title: 'Payments', summary: 'Payment methods, verification, checkout display, and settlement preview.', rows: [['Verification', 'Required', 'Pending'], ['BenefitPay', 'Ready to set up', 'Bahrain'], ['Settlement', '2-5 business days', 'Preview']], toggles: ['Show cash on delivery', 'Save card option', 'Payment failure alerts'] },
+  { key: 'Domain', title: 'Domain', summary: 'Default link, custom domain, DNS records, SSL, and redirects.', rows: [['Default domain', 'saeed-store.middar.shop', 'Active'], ['Custom domain', 'Not connected', 'Pending'], ['SSL', 'Automatic', 'Ready']], toggles: ['Redirect www', 'Force HTTPS', 'Show domain status'] },
+  { key: 'Checkout', title: 'Checkout', summary: 'Checkout fields, order notes, customer account, and confirmation behavior.', rows: [['Guest checkout', 'Enabled', 'Active'], ['Order notes', 'Enabled', 'Visible'], ['Phone verification', 'Optional', 'Draft']], toggles: ['Require customer email', 'Allow order notes', 'Show gift message'] },
+  { key: 'Taxes', title: 'Taxes', summary: 'VAT, tax numbers, product tax defaults, and invoice display.', rows: [['VAT', 'Disabled', 'Can enable'], ['Tax number', 'Missing', 'Required later'], ['Default product tax', '0%', 'Preview']], toggles: ['Show tax at checkout', 'Tax-inclusive pricing', 'Invoice tax summary'] },
+  { key: 'Sales channels', title: 'Sales channels', summary: 'Online store, mobile app, point of sale, and landing pages.', rows: [['Online store', 'Active', 'Primary'], ['Mobile app', 'Not enabled', 'Optional'], ['Landing pages', 'Draft', 'Ready']], toggles: ['Show channel badges', 'Enable draft channels', 'Channel analytics'] },
+  { key: 'Markets', title: 'Markets', summary: 'Countries, currencies, language, and regional storefront rules.', rows: [['Primary market', 'Bahrain', 'Active'], ['Currency', 'BHD', 'Active'], ['GCC expansion', 'Draft', 'Preview']], toggles: ['Multi-currency', 'Auto language', 'Market-specific pricing'] },
+  { key: 'Products', title: 'Products settings', summary: 'Inventory, product display, reviews, digital products, and SEO defaults.', rows: [['Low stock alert', '5 items', 'Active'], ['Reviews', 'Visible', 'Moderated'], ['Digital delivery', 'Draft', 'Optional']], toggles: ['Track inventory', 'Show sold-out badge', 'Allow product reviews'] },
+  { key: 'Orders', title: 'Orders settings', summary: 'Statuses, invoices, custom fields, order tags, and automation previews.', rows: [['Invoice prefix', 'MD-', 'Active'], ['Custom fields', 'Locked', 'Pro'], ['Auto tags', 'Draft', 'Preview']], toggles: ['Auto invoice number', 'Allow order editing', 'Notify staff'] },
+  { key: 'Shipping & delivery', title: 'Shipping & delivery', summary: 'Pickup locations, couriers, delivery zones, COD, and free shipping.', rows: [['Pickup branch', 'Manama', 'Needs hours'], ['Aramex', 'Connected', 'Active'], ['Free shipping', '30 BHD+', 'Active']], toggles: ['Cash on delivery', 'Free shipping rule', 'Delivery date picker'] },
+  { key: 'Customers', title: 'Customers settings', summary: 'Customer groups, registration fields, wallet, privacy, and import options.', rows: [['Groups', '3 groups', 'Preview'], ['Custom fields', 'Draft', 'Optional'], ['Import', 'CSV ready', 'Visual']], toggles: ['Require phone', 'Allow customer wallet', 'Marketing consent'] },
+  { key: 'Marketing', title: 'Marketing settings', summary: 'Pixels, feeds, coupons, campaigns, abandoned carts, and UTM defaults.', rows: [['Meta pixel', 'Not connected', 'Draft'], ['Coupons', 'Ready', 'Active'], ['Abandoned carts', 'Locked', 'Plus']], toggles: ['Marketing emails', 'Coupon stacking', 'UTM auto tagging'] },
+  { key: 'Customer Wallet', title: 'Customer Wallet', summary: 'Wallet balance rules, refunds, loyalty credit, and customer display.', rows: [['Wallet', 'Disabled', 'Can enable'], ['Refunds to wallet', 'Draft', 'Preview'], ['Expiry', 'Never', 'Default']], toggles: ['Enable wallet', 'Show wallet at checkout', 'Wallet expiry alerts'] },
+  { key: 'Blog', title: 'Blog settings', summary: 'Articles, categories, SEO defaults, and storefront visibility.', rows: [['Blog', 'Hidden', 'Draft'], ['Categories', '2', 'Preview'], ['SEO template', 'Ready', 'Draft']], toggles: ['Show blog in nav', 'Allow article comments', 'Featured articles'] },
+  { key: 'Reviews', title: 'Reviews settings', summary: 'Product reviews, moderation, questions, and post-purchase requests.', rows: [['Reviews', 'Enabled', 'Moderated'], ['Questions', 'Enabled', 'Visible'], ['Review request', 'After 7 days', 'Draft']], toggles: ['Auto publish reviews', 'Allow photos', 'Ask after delivery'] },
+  { key: 'Notifications', title: 'Notifications', summary: 'Email, dashboard, customer messages, staff alerts, and system events.', rows: [['Email verification', 'Pending', 'Action needed'], ['Order alerts', 'Enabled', 'Active'], ['Customer SMS', 'Not connected', 'Preview']], toggles: ['Dashboard notifications', 'Email notifications', 'Low stock alerts'] },
+  { key: 'Installed apps', title: 'Installed apps', summary: 'Connected apps, permissions, billing, logs, and uninstall states.', rows: [['Installed apps', '0', 'Empty'], ['App permissions', 'Preview', 'Ready'], ['Webhook status', 'Draft', 'Not connected']], toggles: ['App update alerts', 'Permission warnings', 'Webhook logs'] },
 ]
 
 const specialPageDetails: Record<string, { badge?: string; title: string; body: string; locked?: boolean }> = {
@@ -894,7 +918,7 @@ function HeaderToolPanel({
     return (
       <section className="tool-popover profile-popover">
         <div className="profile-summary"><span>Ø³</span><div><b>Ø³Ø¹ÙŠØ¯</b><small>Basic plan</small></div></div>
-        <button onClick={() => go('settings', 'Settings:Billing')}>Store plan & subscriptions</button>
+        <button onClick={() => go('settings', 'Settings:Balance & billing')}>Store plan & subscriptions</button>
         <button>Invite & earn</button>
         <button>Give feedback</button>
         <button onClick={() => go('settings', 'Settings:Notifications')}>Notification preferences</button>
@@ -903,7 +927,7 @@ function HeaderToolPanel({
   }
 
   if (activeTool === 'settings') {
-    return <SettingsDrawer closeTools={closeTools} />
+    return <SettingsDrawer closeTools={closeTools} setScreen={setScreen} setActivePageKey={setActivePageKey} />
   }
 
   return (
@@ -919,30 +943,17 @@ function HeaderToolPanel({
   )
 }
 
-function SettingsDrawer({ closeTools }: { closeTools: () => void }) {
-  const settingsItems = [
-    'Your profile',
-    'General',
-    'Store plan',
-    'Manage stores',
-    'Balance & billing',
-    'Payments',
-    'Domain',
-    'Checkout',
-    'Taxes',
-    'Sales channels',
-    'Markets',
-    'Products',
-    'Orders',
-    'Shipping & delivery',
-    'Customers',
-    'Marketing',
-    'Customer Wallet',
-    'Blog',
-    'Reviews',
-    'Notifications',
-    'Installed apps',
-  ]
+function SettingsDrawer({
+  closeTools,
+  setScreen,
+  setActivePageKey,
+}: {
+  closeTools: () => void
+  setScreen: (screen: Screen) => void
+  setActivePageKey: (key: string | null) => void
+}) {
+  const [activeSetting, setActiveSetting] = useState(settingsCatalog[0].key)
+  const activeDetail = settingsCatalog.find((item) => item.key === activeSetting) ?? settingsCatalog[0]
 
   return (
     <section className="settings-drawer">
@@ -950,34 +961,32 @@ function SettingsDrawer({ closeTools }: { closeTools: () => void }) {
         <h2>Settings</h2>
         <label><Search size={17} /><input placeholder="Search settings" /></label>
         <nav>
-          {settingsItems.map((item, index) => (
-            <button className={index === 0 ? 'active' : ''} key={item}>
-              <span>{item.slice(0, 1)}</span>
-              {item}
+          {settingsCatalog.map((item) => (
+            <button className={activeSetting === item.key ? 'active' : ''} key={item.key} onClick={() => setActiveSetting(item.key)}>
+              <span>{item.title.slice(0, 1)}</span>
+              {item.title}
             </button>
           ))}
         </nav>
       </aside>
       <section>
         <div className="drawer-head">
-          <h2>Your profile</h2>
+          <h2>{activeDetail.title}</h2>
           <div>
-            <button aria-label="Expand settings"><Grid3X3 size={18} /></button>
+            <button
+              aria-label="Expand settings"
+              onClick={() => {
+                setScreen('settings')
+                setActivePageKey(`Settings:${activeSetting}`)
+                closeTools()
+              }}
+            >
+              <Grid3X3 size={18} />
+            </button>
             <button aria-label="Close settings" onClick={closeTools}>x</button>
           </div>
         </div>
-        <div className="settings-card-list">
-          <article><b>Edit profile</b><p>Update your personal information and account details.</p><ChevronDown size={18} /></article>
-          <article><b>Registered devices</b><p>Review and manage devices signed in to your account.</p><ChevronDown size={18} /></article>
-          <article><b>Quick access</b><p>Manage passkeys for fast, secure sign-in across all your devices.</p><ChevronDown size={18} /></article>
-          <article><b>Password</b><p>Change your account password.</p><button>Change</button></article>
-          <article><b>Two-factor authentication</b><p>Protect your account with an extra verification step.</p><span /></article>
-          <article><b>Sign out of all devices</b><p>Sign out of all other devices signed in to your account.</p><button className="danger">Sign out</button></article>
-        </div>
-        <div className="settings-toggles">
-          <label>English (Beta)<input type="checkbox" defaultChecked /></label>
-          <label>Dark mode<input type="checkbox" defaultChecked /></label>
-        </div>
+        <SettingsContent detail={activeDetail} compact />
       </section>
     </section>
   )
@@ -1228,6 +1237,10 @@ function DynamicPage({
         <Logs />
       </PageShell>
     )
+  }
+
+  if (route === 'settings') {
+    return <SettingsPage key={pageTitle} initialSetting={pageTitle} />
   }
 
   if (detail) {
@@ -1961,30 +1974,53 @@ function Logs() {
   )
 }
 
-function SettingsPage() {
-  const settingsItems = ['Store settings', 'Account', 'Billing', 'Notifications', 'Security']
-  const [activeSetting, setActiveSetting] = useState(settingsItems[0])
+function SettingsPage({ initialSetting = 'Your profile' }: { initialSetting?: string }) {
+  const normalizedInitial = settingsCatalog.find((item) => item.key === initialSetting || item.title === initialSetting)?.key ?? settingsCatalog[0].key
+  const [activeSetting, setActiveSetting] = useState(normalizedInitial)
+  const activeDetail = settingsCatalog.find((item) => item.key === activeSetting) ?? settingsCatalog[0]
 
   return (
-    <PageShell crumb="Settings" title="Store settings" aside={<FilterList title="Settings" items={settingsItems} activeItem={activeSetting} onItemClick={setActiveSetting} />}>
-      <div className="settings-grid">
-        {[
-          ['Store profile', 'Store name, logo, description, and contact details.'],
-          ['Account settings', 'Owner information, email, phone, and language preferences.'],
-          ['Billing and plan', 'Current Basic plan, upgrade options, and invoices preview.'],
-          ['Notifications', 'Email, dashboard, and customer message alerts.'],
-          ['Security', 'Password, active sessions, and verification status.'],
-          ['Team access', 'Roles, permissions, and staff invitations.'],
-        ].map(([title, body]) => (
+    <PageShell crumb="Settings" title={activeDetail.title} aside={<FilterList title="Settings" items={settingsCatalog.map((item) => item.key)} activeItem={activeSetting} onItemClick={setActiveSetting} />}>
+      <div className="settings-overview">
+        <section>
+          <span>Settings</span>
+          <h1>{activeDetail.title}</h1>
+          <p>{activeDetail.summary}</p>
+        </section>
+        <button>Save changes</button>
+      </div>
+      <SettingsContent detail={activeDetail} />
+    </PageShell>
+  )
+}
+
+function SettingsContent({ detail, compact = false }: { detail: typeof settingsCatalog[number]; compact?: boolean }) {
+  const cards = [
+    ['Configuration', detail.summary, 'Open'],
+    ['Access & visibility', 'Control where this setting appears in the merchant workflow.', 'Manage'],
+    ['Activity', 'Preview changes, alerts, and recent actions for this settings area.', 'View log'],
+  ]
+
+  return (
+    <div className={compact ? 'settings-content compact' : 'settings-content'}>
+      <Panel title="Current setup">
+        <Table rows={detail.rows} />
+      </Panel>
+      <div className="settings-card-list">
+        {cards.map(([title, body, action]) => (
           <article key={title}>
-            <Settings size={22} />
-            <h3>{title}</h3>
+            <b>{title}</b>
             <p>{body}</p>
-            <button onClick={() => setActiveSetting(title.includes('Billing') ? 'Billing' : title.includes('Notifications') ? 'Notifications' : title.includes('Security') ? 'Security' : 'Account')}>Open</button>
+            <button>{action}</button>
           </article>
         ))}
       </div>
-    </PageShell>
+      <div className="settings-toggles">
+        {detail.toggles.map((toggle, index) => (
+          <label key={toggle}>{toggle}<input type="checkbox" defaultChecked={index === 0} /></label>
+        ))}
+      </div>
+    </div>
   )
 }
 

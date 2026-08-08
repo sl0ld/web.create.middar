@@ -1221,6 +1221,52 @@ button {
   font-weight: 850;
 }
 
+.settings-overview {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  background: var(--panel);
+}
+
+.settings-overview span {
+  color: var(--mint);
+  font-weight: 900;
+}
+
+.settings-overview h1,
+.settings-overview p {
+  margin: 6px 0 0;
+}
+
+.settings-overview p {
+  max-width: 760px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.settings-overview button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 16px;
+  color: #123330;
+  background: var(--mint);
+  font-weight: 900;
+}
+
+.settings-content {
+  display: grid;
+  gap: 16px;
+}
+
+.settings-content.compact .panel {
+  min-height: auto;
+}
+
 .tool-popover h3,
 .tool-popover p,
 .tool-popover article p {
@@ -2900,6 +2946,7 @@ button {
   .email-alert,
   .locked-card,
   .feature-hero,
+  .settings-overview,
   .verify-card,
   .apps-hero {
     align-items: stretch;
