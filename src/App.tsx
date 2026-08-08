@@ -94,6 +94,22 @@ const menuGroups: Array<[string, string[]]> = [
 ]
 
 const orderStatuses = ['All orders', 'محذوف', 'بإنتظار الدفع', 'بإنتظار المراجعة', 'قيد التنفيذ', 'تم التنفيذ', 'جاري التوصيل', 'تم التوصيل', 'تم الشحن', 'ملغي', 'مسترجع', 'قيد الإسترجاع', 'طلب عرض سعر', 'مكتمل']
+const orderStatusQuery: Record<string, string> = {
+  [orderStatuses[0]]: '',
+  [orderStatuses[1]]: 'deleted',
+  [orderStatuses[2]]: '987164523',
+  [orderStatuses[3]]: 'review',
+  [orderStatuses[4]]: 'processing',
+  [orderStatuses[5]]: 'executed',
+  [orderStatuses[6]]: 'delivering',
+  [orderStatuses[7]]: 'delivered',
+  [orderStatuses[8]]: 'shipped',
+  [orderStatuses[9]]: 'canceled',
+  [orderStatuses[10]]: 'returned',
+  [orderStatuses[11]]: 'returning',
+  [orderStatuses[12]]: 'quote',
+  [orderStatuses[13]]: 'completed',
+}
 const productFilters = ['Unpriced Products', 'Pinned Products', 'Hidden Products', 'Hidden in Store App', 'Discounted Products', 'Out of Stock Products', 'For Sale Products', 'Uncategorized Products', 'Taxable Products', 'Products Requiring Shipping', 'Nearly Out of Stock', 'Products Without Description']
 const productFilterStatus: Record<string, string> = {
   'Unpriced Products': 'unpriced',
@@ -1128,6 +1144,8 @@ function SubNav({
 }) {
   const group = groupForSection(active)
   const activeTab = activePageKey?.startsWith(`${group}:`) ? activePageKey.split(':')[1] : active.tabs[0]
+  const [ordersMoreOpen, setOrdersMoreOpen] = useState(false)
+  const ordersMoreItems = ['Bookings', 'Custom fields', 'Cart options', 'Export templates', 'Deleted orders', 'Auto tags']
   const openTab = (tab: string) => {
     if (active.id === 'summary') {
       setScreen('summary')
@@ -1135,6 +1153,12 @@ function SubNav({
       return
     }
 
+    if (active.id === 'orders' && tab === 'More') {
+      setOrdersMoreOpen((open) => !open)
+      return
+    }
+
+    setOrdersMoreOpen(false)
     setScreen(routeForMenuLink(group, tab))
     setActivePageKey(`${group}:${tab}`)
   }
@@ -1143,14 +1167,32 @@ function SubNav({
     <nav className="sub-nav">
       <div>
         {active.tabs.map((tab) => (
-          <button
-            aria-label={tab}
-            className={activeTab === tab ? 'active' : ''}
-            key={tab}
-            onClick={() => openTab(tab)}
-          >
-            {tab}
-          </button>
+          <span className="sub-nav-item" key={tab}>
+            <button
+              aria-label={tab}
+              className={activeTab === tab || (active.id === 'orders' && tab === 'More' && ordersMoreOpen) ? 'active' : ''}
+              onClick={() => openTab(tab)}
+            >
+              {tab === 'More' && active.id === 'orders' ? <MoreHorizontal size={18} /> : null}
+              {tab}
+            </button>
+            {active.id === 'orders' && tab === 'More' && ordersMoreOpen && (
+              <div className="sub-more-menu">
+                {ordersMoreItems.map((item) => (
+                  <button
+                    key={item}
+                    onClick={() => {
+                      setScreen('orders')
+                      setActivePageKey(`Orders:${item}`)
+                      setOrdersMoreOpen(false)
+                    }}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            )}
+          </span>
         ))}
       </div>
       {active.action && (
@@ -1641,20 +1683,31 @@ function CampaignBuilderPage() {
 }
 
 function Orders() {
-  const [activeStatus, setActiveStatus] = useState(orderStatuses[0])
+  const initialStatus = () => {
+    const status = new URLSearchParams(window.location.search).get('status')
+    return orderStatuses.find((item) => orderStatusQuery[item] === status) ?? orderStatuses[0]
+  }
+  const [activeStatus, setActiveStatus] = useState(initialStatus)
   const [selectedOrder, setSelectedOrder] = useState<(typeof sampleOrders)[number] | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
-  const [moreOpen, setMoreOpen] = useState(false)
   const [statusesOpen, setStatusesOpen] = useState(false)
   const [listCollapsed, setListCollapsed] = useState(false)
   const [activeFilter, setActiveFilter] = useState('Saved filters')
-  const visibleOrders = sampleOrders.filter((order) => {
+  const merchantOrders: typeof sampleOrders = []
+  const visibleOrders = merchantOrders.filter((order) => {
     const matchesStatus = activeStatus === orderStatuses[0] || order.status === activeStatus
     const text = `${order.id} ${order.customer} ${order.channel}`.toLowerCase()
     return matchesStatus && text.includes(searchTerm.toLowerCase())
   })
   const isEmpty = visibleOrders.length === 0
+  const setOrderStatus = (status: string) => {
+    setActiveStatus(status)
+    setSelectedOrder(null)
+    const query = orderStatusQuery[status]
+    const nextUrl = `${window.location.pathname}${query ? `?status=${query}` : ''}`
+    window.history.pushState({}, '', nextUrl)
+  }
   const content = (
     <div className="orders-workspace">
       <section className="orders-commandbar">
@@ -1676,9 +1729,9 @@ function Orders() {
       <section className={listCollapsed ? 'orders-board collapsed' : 'orders-board'}>
         <aside className="orders-status-list">
           {orderStatuses.map((status, index) => {
-            const count = status === orderStatuses[0] ? sampleOrders.length : sampleOrders.filter((order) => order.status === status).length
+            const count = status === orderStatuses[0] ? merchantOrders.length : merchantOrders.filter((order) => order.status === status).length
             return (
-              <button className={activeStatus === status ? 'active' : ''} key={status} onClick={() => { setActiveStatus(status); setSelectedOrder(null) }}>
+              <button className={activeStatus === status ? 'active' : ''} key={status} onClick={() => setOrderStatus(status)}>
                 <i style={{ background: orderStatusColor(index) }} />
                 <span>{status}</span>
                 <b>{count}</b>
@@ -1730,17 +1783,9 @@ function Orders() {
         </aside>
       </section>
 
-      <div className="orders-secondary-actions">
+      <div className="orders-inline-actions">
         <button onClick={() => setStatusesOpen(true)}><SlidersHorizontal size={17} /> Customize statuses</button>
-        <button onClick={() => setMoreOpen(!moreOpen)}><MoreHorizontal size={18} /> More</button>
         <button aria-label="Refresh orders" onClick={() => { setSelectedOrder(null); setSearchTerm('') }}><RefreshCcw size={17} /></button>
-        {moreOpen && (
-          <div className="orders-more-menu">
-            {['Bookings', 'Custom fields', 'Cart options', 'Export templates', 'Deleted orders', 'Auto tags'].map((item) => (
-              <button key={item}>{item}</button>
-            ))}
-          </div>
-        )}
       </div>
 
       {filterOpen && (

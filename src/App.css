@@ -1473,11 +1473,14 @@ button {
 .sub-nav > div {
   min-width: 0;
   gap: 22px;
-  overflow-x: auto;
+  overflow: visible;
   scrollbar-width: none;
 }
 
 .sub-nav button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   height: 60px;
   border: 0;
   color: var(--muted);
@@ -1489,6 +1492,39 @@ button {
 .sub-nav button.active {
   color: var(--mint);
   border-bottom: 3px solid var(--mint);
+}
+
+.sub-nav-item {
+  position: relative;
+}
+
+.sub-more-menu {
+  position: absolute;
+  top: 58px;
+  left: 0;
+  z-index: 50;
+  display: grid;
+  min-width: 210px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #202123;
+  box-shadow: var(--shadow);
+}
+
+.sub-more-menu button {
+  justify-content: flex-start;
+  width: 100%;
+  height: 42px;
+  border: 0;
+  border-radius: 0;
+  padding: 0 13px;
+  text-align: left;
+}
+
+.sub-more-menu button:hover {
+  color: var(--mint);
+  background: #ffffff0f;
 }
 
 .mint-action {
@@ -2234,7 +2270,7 @@ button {
 }
 
 .orders-commandbar button,
-.orders-secondary-actions button {
+.orders-inline-actions button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2246,7 +2282,7 @@ button {
 
 .orders-commandbar button.active,
 .orders-commandbar button:hover,
-.orders-secondary-actions button:hover {
+.orders-inline-actions button:hover {
   border-color: var(--mint);
   color: var(--mint);
 }
@@ -2283,6 +2319,7 @@ button {
   max-height: 610px;
   overflow-y: auto;
   scrollbar-width: thin;
+  scrollbar-color: #ffffff2c transparent;
 }
 
 .orders-status-list::-webkit-scrollbar {
@@ -2358,12 +2395,18 @@ button {
 .orders-results,
 .orders-detail-panel {
   display: grid;
-  align-content: center;
+  min-height: 610px;
+}
+
+.orders-results {
+  align-content: start;
+}
+
+.orders-results > .empty {
   min-height: 610px;
 }
 
 .orders-list {
-  align-self: start;
   display: grid;
 }
 
@@ -2422,39 +2465,19 @@ button {
   min-height: 560px;
 }
 
-.orders-secondary-actions {
+.orders-inline-actions {
   position: relative;
   display: flex;
+  justify-content: flex-start;
   gap: 10px;
   flex-wrap: wrap;
 }
 
-.orders-secondary-actions button {
+.orders-inline-actions button {
   min-height: 38px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
-}
-
-.orders-more-menu {
-  position: absolute;
-  top: 46px;
-  left: 160px;
-  z-index: 15;
-  display: grid;
-  min-width: 210px;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #202123;
-  box-shadow: var(--shadow);
-}
-
-.orders-more-menu button {
-  justify-content: flex-start;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
 }
 
 .orders-dialog-backdrop {
