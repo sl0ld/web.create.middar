@@ -1144,8 +1144,10 @@ function SubNav({
 }) {
   const group = groupForSection(active)
   const activeTab = activePageKey?.startsWith(`${group}:`) ? activePageKey.split(':')[1] : active.tabs[0]
-  const [ordersMoreOpen, setOrdersMoreOpen] = useState(false)
+  const [subMoreOpen, setSubMoreOpen] = useState(false)
   const ordersMoreItems = ['Bookings', 'Custom fields', 'Cart options', 'Export templates', 'Deleted orders', 'Auto tags']
+  const productsMoreItems = ['Pre-order campaigns', 'Product restrictions', 'Inventory audit', 'Import from platforms', 'Import & export', 'Export templates', 'Warehouses & branches', 'Retail stores']
+  const moreItems = active.id === 'products' ? productsMoreItems : ordersMoreItems
   const openTab = (tab: string) => {
     if (active.id === 'summary') {
       setScreen('summary')
@@ -1153,12 +1155,12 @@ function SubNav({
       return
     }
 
-    if (active.id === 'orders' && tab === 'More') {
-      setOrdersMoreOpen((open) => !open)
+    if ((active.id === 'orders' || active.id === 'products') && tab === 'More') {
+      setSubMoreOpen((open) => !open)
       return
     }
 
-    setOrdersMoreOpen(false)
+    setSubMoreOpen(false)
     setScreen(routeForMenuLink(group, tab))
     setActivePageKey(`${group}:${tab}`)
   }
@@ -1170,21 +1172,21 @@ function SubNav({
           <span className="sub-nav-item" key={tab}>
             <button
               aria-label={tab}
-              className={activeTab === tab || (active.id === 'orders' && tab === 'More' && ordersMoreOpen) ? 'active' : ''}
+              className={activeTab === tab || ((active.id === 'orders' || active.id === 'products') && tab === 'More' && subMoreOpen) ? 'active' : ''}
               onClick={() => openTab(tab)}
             >
-              {tab === 'More' && active.id === 'orders' ? <MoreHorizontal size={18} /> : null}
+              {tab === 'More' && (active.id === 'orders' || active.id === 'products') ? <MoreHorizontal size={18} /> : null}
               {tab}
             </button>
-            {active.id === 'orders' && tab === 'More' && ordersMoreOpen && (
+            {(active.id === 'orders' || active.id === 'products') && tab === 'More' && subMoreOpen && (
               <div className="sub-more-menu">
-                {ordersMoreItems.map((item) => (
+                {moreItems.map((item) => (
                   <button
                     key={item}
                     onClick={() => {
-                      setScreen('orders')
-                      setActivePageKey(`Orders:${item}`)
-                      setOrdersMoreOpen(false)
+                      setScreen(active.id)
+                      setActivePageKey(`${group}:${item}`)
+                      setSubMoreOpen(false)
                     }}
                   >
                     {item}
@@ -1396,9 +1398,11 @@ function DynamicPage({
   }
 
   if (route === 'products') {
+    if (pageTitle === 'All products') return <Products />
+
     return (
       <PageShell crumb="Products" title={pageTitle} aside={<FilterList title="Products" items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
-        {pageTitle === 'All products' ? <SplitEmpty title="No products selected" action="Filter" /> : <PagePreview title={pageTitle} group={group} link={pageTitle} />}
+        <PagePreview title={pageTitle} group={group} link={pageTitle} />
       </PageShell>
     )
   }
@@ -1914,6 +1918,172 @@ void LegacyOrders
 function Products() {
   const initialFilter = () => {
     const status = new URLSearchParams(window.location.search).get('status')
+    return productFilters.find((item) => productFilterStatus[item] === status) ?? ''
+  }
+  const [activeFilter, setActiveFilter] = useState<string>(initialFilter)
+  const [selectedProduct, setSelectedProduct] = useState<(typeof sampleProducts)[number] | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [listCollapsed, setListCollapsed] = useState(false)
+  const [activeFilterSection, setActiveFilterSection] = useState('Product Status')
+  const merchantProducts: typeof sampleProducts = []
+  const visibleProducts = merchantProducts.filter((product) => {
+    const text = `${product.name} ${product.sku}`.toLowerCase()
+    return text.includes(searchTerm.toLowerCase())
+  })
+  const setProductFilter = (item: string) => {
+    setActiveFilter(item)
+    setSelectedProduct(null)
+    const status = productFilterStatus[item]
+    const nextUrl = `${window.location.pathname}${status ? `?status=${status}` : ''}`
+    window.history.pushState({}, '', nextUrl)
+  }
+  const clearStatus = () => {
+    setActiveFilter('')
+    setSelectedProduct(null)
+    window.history.pushState({}, '', window.location.pathname)
+  }
+
+  return (
+    <div className="orders-workspace products-workspace">
+      <section className="orders-commandbar">
+        <label>
+          <Search size={19} />
+          <input
+            value={searchTerm}
+            onChange={(event) => {
+              setSearchTerm(event.target.value)
+              setSelectedProduct(null)
+            }}
+            placeholder="Search products"
+          />
+          <span>i</span>
+        </label>
+        <button className={filterOpen ? 'active' : ''} onClick={() => setFilterOpen(true)}><Filter size={18} /> Filter</button>
+      </section>
+
+      {activeFilter && productFilterStatus[activeFilter] && (
+        <section className="product-filter-chip-row">
+          <span><b>Product Status:</b> {activeFilter}<button aria-label="Remove product status filter" onClick={clearStatus}>x</button></span>
+          <button onClick={clearStatus}>Cancel</button>
+        </section>
+      )}
+
+      <section className={listCollapsed ? 'orders-board products-board collapsed' : 'orders-board products-board'}>
+        <aside className="orders-status-list products-filter-list">
+          {productFilters.map((filter) => (
+            <button className={activeFilter === filter ? 'active' : ''} key={filter} onClick={() => setProductFilter(filter)}>
+              <span>{filter}</span>
+            </button>
+          ))}
+        </aside>
+
+        <button className="orders-collapse" aria-label="Collapse product filters" onClick={() => setListCollapsed(!listCollapsed)}>
+          {listCollapsed ? '>' : '<'}
+        </button>
+
+        <section className="orders-results">
+          {visibleProducts.length === 0 ? (
+            <Empty title="No results found" body="Try searching with different keywords or browse other sections." />
+          ) : (
+            <div className="orders-list">
+              {visibleProducts.map((product) => (
+                <button className={selectedProduct?.sku === product.sku ? 'active' : ''} key={product.sku} onClick={() => setSelectedProduct(product)}>
+                  <span><b>{product.name}</b><small>{product.sku}</small></span>
+                  <span>{product.price}<small>Stock: {product.stock}</small></span>
+                  <em>{product.status}</em>
+                </button>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <aside className="orders-detail-panel">
+          {selectedProduct ? (
+            <>
+              <div className="detail-head">
+                <div><span>Product details</span><h2>{selectedProduct.name}</h2></div>
+                <em>{selectedProduct.status}</em>
+              </div>
+              <div className="product-preview-tile"><ShoppingBag size={44} /><b>{selectedProduct.price}</b></div>
+              <Table rows={[
+                ['SKU', selectedProduct.sku, 'Editable'],
+                ['Inventory', selectedProduct.stock, 'Tracked'],
+                ['Status', selectedProduct.status, activeFilter],
+                ['SEO', 'Ready preview', 'Draft'],
+              ]} />
+              <div className="detail-actions"><button>Edit product</button><button>Duplicate</button><button>Hide in store</button></div>
+            </>
+          ) : (
+            <Empty title="No products selected" body="Select a product from the list to preview price, inventory, and storefront status here." />
+          )}
+        </aside>
+      </section>
+
+      {filterOpen && (
+        <ProductsFilterDialog activeFilter={activeFilter} activeSection={activeFilterSection} setActiveFilter={setProductFilter} setActiveSection={setActiveFilterSection} onClose={() => setFilterOpen(false)} />
+      )}
+    </div>
+  )
+}
+
+function ProductsFilterDialog({
+  activeFilter,
+  activeSection,
+  setActiveFilter,
+  setActiveSection,
+  onClose,
+}: {
+  activeFilter: string
+  activeSection: string
+  setActiveFilter: (filter: string) => void
+  setActiveSection: (section: string) => void
+  onClose: () => void
+}) {
+  const sections = ['Sales Channels', 'Product Status', 'Product Category', 'Product Type', 'Market']
+
+  return (
+    <section className="orders-dialog-backdrop">
+      <dialog className="orders-filter-dialog products-filter-dialog" open>
+        <header><h2>Filter</h2><button aria-label="Close filter" onClick={onClose}><X size={18} /></button></header>
+        <main>
+          <article className="saved-filter-card">
+            <SlidersHorizontal size={22} />
+            <div><h3>Saved filters</h3><p>Save this filter setup to make filtering easier next time.</p></div>
+          </article>
+          <div className="orders-filter-list">
+            {sections.map((section) => (
+              <button className={activeSection === section ? 'active' : ''} key={section} onClick={() => setActiveSection(section)}>
+                <span>{section}</span>
+                <ChevronDown size={17} />
+              </button>
+            ))}
+          </div>
+          {activeSection === 'Product Status' && (
+            <section className="product-status-picker">
+              <h4>All</h4>
+              {productFilters.map((filter) => (
+                <button className={activeFilter === filter ? 'active' : ''} key={filter} onClick={() => setActiveFilter(filter)}>
+                  <span>{filter}</span>
+                  {activeFilter === filter && <b>Selected</b>}
+                </button>
+              ))}
+            </section>
+          )}
+        </main>
+        <footer>
+          <button onClick={onClose}>View results</button>
+          <button onClick={onClose}>Save filter</button>
+          <button onClick={() => setActiveFilter('')}>Reset</button>
+        </footer>
+      </dialog>
+    </section>
+  )
+}
+
+function LegacyProducts() {
+  const initialFilter = () => {
+    const status = new URLSearchParams(window.location.search).get('status')
     return productFilters.find((item) => productFilterStatus[item] === status) ?? productFilters[0]
   }
   const [activeFilter, setActiveFilter] = useState(initialFilter)
@@ -1983,6 +2153,8 @@ function Products() {
     </PageShell>
   )
 }
+
+void LegacyProducts
 
 function Marketing() {
   const [activeChannel, setActiveChannel] = useState('Snapchat')
