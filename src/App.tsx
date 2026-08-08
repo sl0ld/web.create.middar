@@ -64,7 +64,7 @@ const sections: Section[] = [
   { id: 'summary', label: 'Home', icon: Home, tabs: ['Store Summary'] },
   { id: 'orders', label: 'Orders', icon: ClipboardList, tabs: ['All orders', 'Order settings', 'Order statuses', 'Bulk status update', 'Auto assignment', 'Invoice settings', 'More'], action: 'New order' },
   { id: 'products', label: 'Products', icon: ShoppingBag, tabs: ['All products', 'Product settings', 'Categories & options', 'Product editor', 'Inventory management', 'Inventory transfer', 'More'], action: 'New product' },
-  { id: 'marketing', label: 'Marketing', icon: Megaphone, tabs: ['Dashboard', 'Campaigns', 'Integrations', 'Audience manager', 'Ad credits', 'UTM Builder'], action: 'Create Ad' },
+  { id: 'marketing', label: 'Marketing', icon: Megaphone, tabs: ['Coupons', 'Promotional offers', 'Marketing calendar', 'Cashback offers', 'Reorder Reminder', 'Customer wallet', 'Settings'], action: 'New coupon' },
   { id: 'store', label: 'Store & Channels', icon: Store, tabs: ['Store design', 'Theme Marketplace', 'Domain', 'Information pages', 'Custom URLs', 'Translation log'], action: 'Manage themes' },
   { id: 'customers', label: 'Customers', icon: Users, tabs: ['All customers', 'Customer groups', 'Import customers', 'Custom fields', 'Settings'], action: 'New customer' },
   { id: 'staff', label: 'Staff', icon: UserRound, tabs: ['Staff', 'Roles & permissions', 'Employees targets'], action: 'New staff' },
@@ -1408,11 +1408,7 @@ function DynamicPage({
   }
 
   if (route === 'marketing') {
-    return (
-      <PageShell crumb="Marketing" title={pageTitle} aside={<FilterList title="Marketing" items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
-        <PagePreview title={pageTitle} group={group} link={pageTitle} />
-      </PageShell>
-    )
+    return <Marketing activePage={pageTitle} />
   }
 
   if (route === 'store') {
@@ -2156,7 +2152,116 @@ function LegacyProducts() {
 
 void LegacyProducts
 
-function Marketing() {
+function Marketing({ activePage = 'Coupons' }: { activePage?: string }) {
+  const couponStates = ['All', 'Active', 'Inactive', 'Expired', 'Scheduled', 'Fully used']
+  const [activeState, setActiveState] = useState(couponStates[0])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterOpen, setFilterOpen] = useState(false)
+  const isCoupons = activePage === 'Coupons' || activePage === 'New coupon'
+
+  if (!isCoupons) {
+    return (
+      <div className="marketing-workspace">
+        <div className="marketing-breadcrumb"><span>Marketing</span><span>›</span><b>{activePage}</b></div>
+        <section className="marketing-feature-card">
+          <span>{activePage}</span>
+          <h2>{activePage === 'Settings' ? 'Marketing settings' : `${activePage} workspace`}</h2>
+          <p>This screen follows Salla's Marketing navigation and is ready for its detailed visual flow.</p>
+          <button>Open guide</button>
+        </section>
+        <section className="marketing-table-card">
+          <Empty title={`No ${activePage.toLowerCase()} yet`} body="New records will appear here after connecting the backend." />
+        </section>
+      </div>
+    )
+  }
+
+  return (
+    <div className="marketing-workspace">
+      <div className="marketing-breadcrumb"><span>Marketing</span><span>›</span><b>Coupons</b></div>
+      <section className="marketing-table-card">
+        <h2>Discount coupons</h2>
+        <div className="marketing-toolbar">
+          <label>
+            <Search size={19} />
+            <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search by coupon name, code, or bulk coupon" />
+          </label>
+          <button className={filterOpen ? 'active' : ''} onClick={() => setFilterOpen(true)}><Filter size={18} /> Filter</button>
+        </div>
+        <div className="coupon-state-tabs">
+          {couponStates.map((state) => (
+            <button className={activeState === state ? 'active' : ''} key={state} onClick={() => setActiveState(state)}>{state}</button>
+          ))}
+        </div>
+        <div className="coupon-skeleton-table">
+          {Array.from({ length: 7 }).map((_, row) => (
+            <div key={row}>
+              <i />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <b />
+            </div>
+          ))}
+        </div>
+      </section>
+      {filterOpen && <MarketingFilterDialog activeState={activeState} setActiveState={setActiveState} onClose={() => setFilterOpen(false)} />}
+    </div>
+  )
+}
+
+function MarketingFilterDialog({
+  activeState,
+  setActiveState,
+  onClose,
+}: {
+  activeState: string
+  setActiveState: (state: string) => void
+  onClose: () => void
+}) {
+  const sections = ['Coupon Status', 'Coupon Type', 'Discount Type', 'Usage date', 'Customer groups']
+  const states = ['All', 'Active', 'Inactive', 'Expired', 'Scheduled', 'Fully used']
+
+  return (
+    <section className="orders-dialog-backdrop">
+      <dialog className="orders-filter-dialog marketing-filter-dialog" open>
+        <header><h2>Filter</h2><button aria-label="Close filter" onClick={onClose}><X size={18} /></button></header>
+        <main>
+          <article className="saved-filter-card">
+            <SlidersHorizontal size={22} />
+            <div><h3>Saved filters</h3><p>Save this filter setup to make filtering easier next time.</p></div>
+          </article>
+          <div className="orders-filter-list">
+            {sections.map((section) => (
+              <button className={section === 'Coupon Status' ? 'active' : ''} key={section}>
+                <span>{section}</span>
+                <ChevronDown size={17} />
+              </button>
+            ))}
+          </div>
+          <section className="product-status-picker">
+            <h4>Coupon Status</h4>
+            {states.map((state) => (
+              <button className={activeState === state ? 'active' : ''} key={state} onClick={() => setActiveState(state)}>
+                <span>{state}</span>
+                {activeState === state && <b>Selected</b>}
+              </button>
+            ))}
+          </section>
+        </main>
+        <footer>
+          <button onClick={onClose}>View results</button>
+          <button onClick={onClose}>Save filter</button>
+          <button onClick={() => setActiveState('All')}>Reset</button>
+        </footer>
+      </dialog>
+    </section>
+  )
+}
+
+function LegacyMarketing() {
   const [activeChannel, setActiveChannel] = useState('Snapchat')
 
   return (
@@ -2171,6 +2276,8 @@ function Marketing() {
     </div>
   )
 }
+
+void LegacyMarketing
 
 function ThemeEditorPage() {
   const editorSections = ['Header', 'Hero', 'Products', 'Footer', 'Colors', 'Mobile preview']

@@ -1490,6 +1490,11 @@ button {
   white-space: nowrap;
 }
 
+.sub-nav button:focus-visible {
+  outline: 2px solid var(--mint);
+  outline-offset: -3px;
+}
+
 .sub-nav button.active {
   color: var(--mint);
   border-bottom: 3px solid var(--mint);
@@ -2748,6 +2753,169 @@ button {
   font-size: 12px;
 }
 
+.marketing-workspace {
+  display: grid;
+  gap: 18px;
+}
+
+.marketing-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-weight: 850;
+}
+
+.marketing-breadcrumb b {
+  color: var(--mint);
+}
+
+.marketing-table-card,
+.marketing-feature-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.marketing-table-card {
+  display: grid;
+  gap: 18px;
+  min-height: 560px;
+  padding: 14px;
+}
+
+.marketing-table-card h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.marketing-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.marketing-toolbar label,
+.marketing-toolbar button {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #202123;
+}
+
+.marketing-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 13px;
+}
+
+.marketing-toolbar input {
+  width: 100%;
+  border: 0;
+  color: var(--text);
+  background: transparent;
+  outline: none;
+}
+
+.marketing-toolbar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  color: var(--text);
+  font-weight: 850;
+}
+
+.marketing-toolbar button.active,
+.marketing-toolbar button:hover {
+  border-color: var(--mint);
+  color: var(--mint);
+}
+
+.coupon-state-tabs {
+  display: flex;
+  gap: 28px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.coupon-state-tabs button {
+  min-height: 34px;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.coupon-state-tabs button.active {
+  color: var(--mint);
+}
+
+.coupon-skeleton-table {
+  display: grid;
+}
+
+.coupon-skeleton-table div {
+  display: grid;
+  grid-template-columns: 18px minmax(120px, 1.4fr) minmax(90px, 0.8fr) minmax(110px, 1fr) minmax(90px, 0.8fr) minmax(110px, 0.9fr) 84px;
+  gap: 14px;
+  align-items: center;
+  min-height: 56px;
+  border-bottom: 1px solid var(--line);
+}
+
+.coupon-skeleton-table i,
+.coupon-skeleton-table span,
+.coupon-skeleton-table b {
+  display: block;
+  height: 12px;
+  border-radius: 999px;
+  background: #ffffff18;
+}
+
+.coupon-skeleton-table i {
+  width: 13px;
+  height: 13px;
+  border-radius: 4px;
+}
+
+.coupon-skeleton-table b {
+  height: 22px;
+}
+
+.marketing-feature-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.marketing-feature-card span {
+  color: var(--mint);
+  font-weight: 850;
+}
+
+.marketing-feature-card h2,
+.marketing-feature-card p {
+  margin: 0;
+}
+
+.marketing-feature-card p {
+  color: var(--muted);
+}
+
+.marketing-feature-card button {
+  justify-self: start;
+  min-height: 38px;
+  border: 1px solid var(--mint);
+  border-radius: 8px;
+  padding: 0 14px;
+  color: var(--mint);
+  background: transparent;
+  font-weight: 850;
+}
+
 .orders-quick-dialog {
   align-self: start;
   justify-self: center;
@@ -3705,7 +3873,12 @@ button {
     grid-template-columns: 1fr;
   }
 
+  .marketing-toolbar {
+    grid-template-columns: 1fr;
+  }
+
   .orders-list button,
+  .coupon-skeleton-table div,
   .status-editor-list {
     grid-template-columns: 1fr;
   }
