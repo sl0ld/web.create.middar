@@ -160,6 +160,93 @@ const settingsCatalog = [
   { key: 'Notifications', title: 'Notifications', summary: 'Email, dashboard, customer messages, staff alerts, and system events.', rows: [['Email verification', 'Pending', 'Action needed'], ['Order alerts', 'Enabled', 'Active'], ['Customer SMS', 'Not connected', 'Preview']], toggles: ['Dashboard notifications', 'Email notifications', 'Low stock alerts'] },
   { key: 'Installed apps', title: 'Installed apps', summary: 'Connected apps, permissions, billing, logs, and uninstall states.', rows: [['Installed apps', '0', 'Empty'], ['App permissions', 'Preview', 'Ready'], ['Webhook status', 'Draft', 'Not connected']], toggles: ['App update alerts', 'Permission warnings', 'Webhook logs'] },
 ]
+const settingsDeepControls: Record<string, Array<{ title: string; controls: Array<{ label: string; helper?: string; enabled?: boolean; link?: boolean }> }>> = {
+  Products: [
+    {
+      title: 'Product listing',
+      controls: [
+        { label: 'Show out-of-stock products last', enabled: false },
+        { label: 'Show "Show more" button in product description', enabled: false },
+        { label: 'Show "-" when price is zero', enabled: false },
+        { label: 'Show "You may also like" section on product page', link: true },
+        { label: 'Display product images in full quality', helper: 'Keep product images in their original resolution without compression.', enabled: false },
+      ],
+    },
+    {
+      title: 'Product display in store',
+      controls: [
+        { label: 'Show "Starting from" price', enabled: false },
+        { label: 'Show promotions on the product page', enabled: false },
+        { label: 'Auto-add promotional item to cart', enabled: true },
+        { label: 'Product tax pricing', helper: 'Choose how VAT is applied to product prices.', link: true },
+      ],
+    },
+    {
+      title: 'Advanced product details',
+      controls: [
+        { label: 'Enable product duplication in cart', enabled: true },
+        { label: 'Show number of purchases', link: true },
+        { label: 'Show product weight on product page, cart, and invoice', enabled: false },
+        { label: 'Include HS code field in advanced details', enabled: false },
+        { label: 'Back in stock alerts', link: true },
+      ],
+    },
+    {
+      title: 'Catalog tools',
+      controls: [
+        { label: 'Branch and warehouse priority order', link: true },
+        { label: 'Product filters', helper: 'Filters only appear when relevant product data is available.', link: true },
+        { label: 'Brands', helper: 'Manage how brands are shown across your storefront.', link: true },
+        { label: 'Exclude products from inventory sync', enabled: false },
+        { label: 'Wishlist notifications', enabled: true },
+      ],
+    },
+  ],
+  Checkout: [
+    {
+      title: 'Checkout behavior',
+      controls: [
+        { label: 'Prefill checkout from last order', helper: 'Automatically prefill shipping address and carrier from the customer latest order.', enabled: false },
+        { label: 'Guest checkout', helper: 'Let visitors check out without creating an account.', link: true },
+        { label: 'Quick Purchase', helper: 'Let customers buy products with a single click.', enabled: false },
+        { label: 'Enable corporate orders', helper: 'Collect company name, commercial registration, and tax ID on invoice.', enabled: false },
+        { label: 'Display donation message', helper: 'Show or hide the donation message in checkout footer.', enabled: true },
+      ],
+    },
+    {
+      title: 'Customer information',
+      controls: [
+        { label: 'Require customer email', enabled: true },
+        { label: 'Require phone verification', enabled: false },
+        { label: 'Allow order notes', enabled: true },
+        { label: 'Show gift message', enabled: false },
+      ],
+    },
+  ],
+  Domain: [
+    {
+      title: 'Domain actions',
+      controls: [
+        { label: 'Edit default subdomain', helper: 'Update the default subdomain used for your store.', link: true },
+        { label: 'Register custom domain', helper: 'Register and set up a custom domain for your store.', link: true },
+        { label: 'Connect external domain', helper: 'Connect a domain you already own.', link: true },
+        { label: 'Transfer domain', helper: 'Transfer your domain from another provider.', link: true },
+      ],
+    },
+  ],
+  'Store plan': [
+    {
+      title: 'Subscription controls',
+      controls: [
+        { label: 'Renew subscription', helper: 'Keep your current plan active.', link: true },
+        { label: 'Update payment method', helper: 'Wallet balance: 0.000 BHD.', link: true },
+        { label: 'Gift a plan', helper: 'Help another merchant grow with a monthly or annual plan.', link: true },
+        { label: 'Pause subscription', helper: 'Pause up to twice per year.', link: true },
+        { label: 'Cancel subscription', helper: 'Plan features remain active until the current period ends.', link: true },
+      ],
+    },
+  ],
+}
 
 const specialPageDetails: Record<string, { badge?: string; title: string; body: string; locked?: boolean }> = {
   'Orders:Custom fields': {
@@ -963,7 +1050,7 @@ function SettingsDrawer({
         <nav>
           {settingsCatalog.map((item) => (
             <button className={activeSetting === item.key ? 'active' : ''} key={item.key} onClick={() => setActiveSetting(item.key)}>
-              <span>{item.title.slice(0, 1)}</span>
+              <span><SettingIcon name={item.key} /></span>
               {item.title}
             </button>
           ))}
@@ -1995,6 +2082,8 @@ function SettingsPage({ initialSetting = 'Your profile' }: { initialSetting?: st
 }
 
 function SettingsContent({ detail, compact = false }: { detail: typeof settingsCatalog[number]; compact?: boolean }) {
+  const [activeControl, setActiveControl] = useState<string | null>(null)
+  const deepControls = settingsDeepControls[detail.key] ?? []
   const cards = [
     ['Configuration', detail.summary, 'Open'],
     ['Access & visibility', 'Control where this setting appears in the merchant workflow.', 'Manage'],
@@ -2006,6 +2095,33 @@ function SettingsContent({ detail, compact = false }: { detail: typeof settingsC
       <Panel title="Current setup">
         <Table rows={detail.rows} />
       </Panel>
+      {deepControls.length > 0 && (
+        <div className="setting-switch-groups">
+          {deepControls.map((group) => (
+            <section className="setting-switch-card" key={group.title}>
+              <h3>{group.title}</h3>
+              {group.controls.map((control) => (
+                <button
+                  className={activeControl === control.label ? 'switch-row active' : 'switch-row'}
+                  key={control.label}
+                  onClick={() => setActiveControl(control.label)}
+                >
+                  <span>
+                    <b>{control.label}</b>
+                    {control.helper && <small>{control.helper}</small>}
+                  </span>
+                  {control.link ? <ChevronDown size={18} /> : <i className={control.enabled ? 'switch-control on' : 'switch-control'} />}
+                </button>
+              ))}
+            </section>
+          ))}
+        </div>
+      )}
+      {activeControl && (
+        <Panel title={activeControl}>
+          <Table rows={[['State', 'Selected', detail.title], ['Preview', 'Ready for visual configuration'], ['Backend', 'Deferred']]} />
+        </Panel>
+      )}
       <div className="settings-card-list">
         {cards.map(([title, body, action]) => (
           <article key={title}>
@@ -2022,6 +2138,20 @@ function SettingsContent({ detail, compact = false }: { detail: typeof settingsC
       </div>
     </div>
   )
+}
+
+function SettingIcon({ name }: { name: string }) {
+  if (name.includes('profile') || name === 'Customers') return <UserRound size={18} />
+  if (name.includes('plan') || name.includes('billing')) return <CreditCard size={18} />
+  if (name.includes('Payment')) return <WalletCards size={18} />
+  if (name.includes('Domain') || name.includes('Sales')) return <Store size={18} />
+  if (name.includes('Checkout') || name.includes('Products')) return <ShoppingBag size={18} />
+  if (name.includes('Orders')) return <ClipboardList size={18} />
+  if (name.includes('Shipping')) return <Truck size={18} />
+  if (name.includes('Marketing')) return <Megaphone size={18} />
+  if (name.includes('Notifications')) return <Bell size={18} />
+  if (name.includes('apps')) return <AppWindow size={18} />
+  return <Settings size={18} />
 }
 
 function SelectableTabs({ items, activeItem, onChange }: { items: string[]; activeItem: string; onChange: (item: string) => void }) {
