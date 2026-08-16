@@ -1196,6 +1196,17 @@ button {
   width: 38px;
 }
 
+.drawer-save-button {
+  justify-self: start;
+  min-height: 40px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 16px;
+  color: #123330;
+  background: var(--mint);
+  font-weight: 900;
+}
+
 .settings-card-list {
   display: grid;
   gap: 10px;
@@ -3462,6 +3473,11 @@ button {
   border-bottom: 0;
 }
 
+.saved-report-list button.active {
+  color: var(--mint);
+  background: #2cf0bd12;
+}
+
 .saved-report-list small,
 .report-builder-grid small {
   color: var(--muted);
@@ -4467,8 +4483,29 @@ button {
 .apps-hero {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 20px;
   padding: 24px;
+}
+
+.apps-hero div {
+  display: grid;
+  gap: 8px;
+}
+
+.apps-hero span {
+  color: var(--mint);
+  font-weight: 900;
+}
+
+.apps-hero h1,
+.apps-hero p {
+  margin: 0;
+}
+
+.apps-hero p {
+  max-width: 760px;
+  color: var(--muted);
 }
 
 .apps-grid {
@@ -4478,6 +4515,40 @@ button {
 .apps-grid span {
   color: var(--mint);
   font-weight: 850;
+}
+
+.apps-grid em,
+.apps-detail-panel em {
+  justify-self: start;
+  border-radius: 999px;
+  padding: 4px 10px;
+  color: var(--mint);
+  background: #2cf0bd14;
+  font-style: normal;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.apps-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 16px;
+  align-items: start;
+}
+
+.apps-workspace .apps-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.apps-detail-panel {
+  position: sticky;
+  top: 152px;
+  display: grid;
+  gap: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--panel);
 }
 
 .table {
@@ -4535,6 +4606,14 @@ button {
   .reports-metric-grid,
   .theme-market-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .apps-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .apps-detail-panel {
+    position: static;
   }
 
   .public-sections,

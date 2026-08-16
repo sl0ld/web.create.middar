@@ -130,7 +130,6 @@ const productFilterStatus: Record<string, string> = {
 }
 const reportMenu = ['Performance summary', 'Sales', 'Orders', 'Customers', 'Visits', 'Landing pages', 'Conversion rate', 'Abandoned carts', 'Payments', 'Shipping', 'Inventory', 'Customer wallet']
 const carriers = ['Aramex', 'Smsa', 'DHL Express', 'Fetchr', 'J&T Express', 'RedBox']
-const apps = ['Offers Bundles Upsell Cross sell', 'Zud, Increase Average Order Value', 'InstaCart - Shoppable Instagram Feed', 'Alfinder', 'Bousla', 'Wallet Plus', 'WhatsApp Chat Button', 'Rawaj Sales Boost Widgets']
 const themes = ['وسام', 'إتقان', 'زاد', 'ليما', 'رايد', 'مواسم']
 const sampleOrders = [
   { id: '#1007', customer: 'سارة علي', total: '24.500 BHD', status: 'بإنتظار الدفع', channel: 'المتجر الإلكتروني', time: 'قبل 8 دقائق' },
@@ -164,6 +163,21 @@ const sampleSupport = [
   { title: 'سؤال عن مقاس العباية', customer: 'محمد حسن', type: 'Questions', status: 'Waiting reply', time: 'اليوم 10:20 ص' },
   { title: 'بلاغ على تقييم غير مناسب', customer: 'فاطمة جاسم', type: 'Reported reviews', status: 'Needs review', time: 'أمس' },
   { title: 'محادثة دعم مفتوحة', customer: 'Khalid Store', type: 'Tickets', status: 'Open', time: '05 Aug' },
+]
+const sampleApps = [
+  { name: 'WhatsApp Chat Button', category: 'Support', plan: 'Free Trial 7 Days', status: 'Installed', permissions: 'Customers, orders, storefront', source: 'My apps' },
+  { name: 'Offers Bundles Upsell Cross sell', category: 'Marketing', plan: 'Start From 48.08 AED / Monthly', status: 'Ready to install', permissions: 'Products, discounts, checkout', source: 'App Store' },
+  { name: 'Zud, Increase Average Order Value', category: 'Sales', plan: 'Free Trial 7 Days', status: 'Ready to install', permissions: 'Products, carts, orders', source: 'App Store' },
+  { name: 'InstaCart - Shoppable Instagram Feed', category: 'Marketing', plan: 'Free plan available', status: 'Needs setup', permissions: 'Storefront, media, channels', source: 'App Store' },
+  { name: 'Bousla', category: 'Accounting', plan: 'Paid add-on', status: 'Configured', permissions: 'Orders, invoices, reports', source: 'My apps' },
+  { name: 'Webhook bridge', category: 'Developer', plan: 'Included', status: 'Draft', permissions: 'Events, orders, products', source: 'Webhooks' },
+]
+const sampleLogs = [
+  { title: 'رمز تحقق أرسل إلى العميل', type: 'SMS log', actor: 'النظام', status: 'Delivered', time: 'اليوم 11:42 ص' },
+  { title: 'تم تعديل حالة الطلب #1006', type: 'Activity history', actor: 'سعيد', status: 'Saved', time: 'اليوم 10:15 ص' },
+  { title: 'تصدير تقرير المنتجات', type: 'Export log', actor: 'مدير المنتجات', status: 'Ready', time: 'أمس' },
+  { title: 'فشل إرسال رسالة خصم', type: 'SMS log', actor: 'Marketing', status: 'Needs review', time: '05 Aug' },
+  { title: 'تم تركيب تطبيق WhatsApp Chat Button', type: 'Activity history', actor: 'سعيد', status: 'Completed', time: '04 Aug' },
 ]
 const setupTasks = [
   ['Add a support number', 'Add', 'Required before launch'],
@@ -1097,7 +1111,12 @@ function SettingsDrawer({
   setActivePageKey: (key: string | null) => void
 }) {
   const [activeSetting, setActiveSetting] = useState(settingsCatalog[0].key)
+  const [drawerNotice, setDrawerNotice] = useState('اختر أي إعداد من القائمة أو افتحه كصفحة كاملة.')
   const activeDetail = settingsCatalog.find((item) => item.key === activeSetting) ?? settingsCatalog[0]
+  const changeDrawerSetting = (setting: string) => {
+    setActiveSetting(setting)
+    setDrawerNotice(`تم فتح ${setting} داخل درج الإعدادات.`)
+  }
 
   return (
     <section className="settings-drawer">
@@ -1106,7 +1125,7 @@ function SettingsDrawer({
         <label><Search size={17} /><input placeholder="Search settings" /></label>
         <nav className="settings-nav-scroll">
           {settingsCatalog.map((item) => (
-            <button className={activeSetting === item.key ? 'active' : ''} key={item.key} onClick={() => setActiveSetting(item.key)}>
+            <button className={activeSetting === item.key ? 'active' : ''} key={item.key} onClick={() => changeDrawerSetting(item.key)}>
               <span><SettingIcon name={item.key} /></span>
               {item.title}
             </button>
@@ -1130,7 +1149,9 @@ function SettingsDrawer({
             <button aria-label="Close settings" onClick={closeTools}>x</button>
           </div>
         </div>
-        <SettingsContent detail={activeDetail} compact />
+        <p className="action-result">{drawerNotice}</p>
+        <button className="drawer-save-button" onClick={() => setDrawerNotice(`تم حفظ ${activeDetail.title} من درج الإعدادات.`)}>Save changes</button>
+        <SettingsContent detail={activeDetail} compact onFeedback={setDrawerNotice} />
       </section>
     </section>
   )
@@ -1470,7 +1491,7 @@ function DynamicPage({
   if (route === 'apps') {
     return (
       <PageShell crumb="Apps & Logs" title={pageTitle} aside={<FilterList title="Apps & Logs" items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
-        <Apps />
+        <Apps activePage={pageTitle} />
       </PageShell>
     )
   }
@@ -1478,7 +1499,7 @@ function DynamicPage({
   if (route === 'logs') {
     return (
       <PageShell crumb="Apps & Logs" title={pageTitle} aside={<FilterList title="Apps & Logs" items={groupLinks} activeItem={pageTitle} onItemClick={openSidePage} />}>
-        <Logs />
+        <Logs activePage={pageTitle} />
       </PageShell>
     )
   }
@@ -3083,6 +3104,10 @@ void LegacyReports
 
 function Reports({ activePage = 'Store performance' }: { activePage?: string }) {
   const [activeReport, setActiveReport] = useState(reportMenu[0])
+  const [notice, setNotice] = useState('التقارير جاهزة كواجهات مرئية، والربط الفعلي مع البيانات مؤجل للإنجن.')
+  const [dialog, setDialog] = useState<string | null>(null)
+  const [builderStep, setBuilderStep] = useState('Report type')
+  const [selectedSavedReport, setSelectedSavedReport] = useState('Daily sales report')
   const reportMetrics = [
     ['Gross sales', '0 AED', 'Total order value before returns and discounts.'],
     ['Net sales', '0 AED', 'Sales after discounts, returns, and cancellations.'],
@@ -3100,6 +3125,7 @@ function Reports({ activePage = 'Store performance' }: { activePage?: string }) 
     return (
       <div className="reports-workspace">
         <div className="marketing-breadcrumb"><span>Reports</span><b>Create report</b></div>
+        <p className="action-result">{notice}</p>
         <section className="report-builder-card">
           <div>
             <span>Custom report</span>
@@ -3107,18 +3133,29 @@ function Reports({ activePage = 'Store performance' }: { activePage?: string }) 
             <p>Build a visual report by choosing the data source, date range, and columns. Backend export is intentionally deferred for this frontend stage.</p>
           </div>
           <div className="report-builder-grid">
-            {['Report type', 'Date range', 'Columns', 'Delivery'].map((item, index) => (
-              <button className={index === 0 ? 'active' : ''} key={item}>
+            {['Report type', 'Date range', 'Columns', 'Delivery'].map((item) => (
+              <button className={builderStep === item ? 'active' : ''} key={item} onClick={() => setBuilderStep(item)}>
                 <b>{item}</b>
-                <small>{index === 0 ? 'Store performance' : 'Choose option'}</small>
+                <small>{item === 'Report type' ? 'Store performance' : item === 'Date range' ? 'Last 7 days' : item === 'Columns' ? 'Sales, orders, profit' : 'Dashboard preview'}</small>
               </button>
             ))}
           </div>
+          <Panel title={`${builderStep} preview`}>
+            <Table rows={[['Selected step', builderStep, 'Ready'], ['Report scope', 'Orders, sales, products', 'Visual'], ['Output', 'Dashboard card + export later', 'Frontend']]} />
+          </Panel>
           <div className="report-builder-actions">
-            <button>Preview report</button>
-            <button className="primary">Create report</button>
+            <button onClick={() => setDialog('Preview report')}>Preview report</button>
+            <button className="primary" onClick={() => setDialog('Create report')}>Create report</button>
           </div>
         </section>
+        {dialog && (
+          <PeopleActionDialog
+            title={dialog}
+            subject={builderStep}
+            rows={[['Step', builderStep, 'Selected'], ['Date range', 'Jul 28 - Aug 04, 2026', 'Ready'], ['Columns', 'Sales, orders, customers', 'Preview']]}
+            onClose={() => { setNotice(`تم تنفيذ ${dialog} لتقرير ${builderStep} كواجهة مرئية.`); setDialog(null) }}
+          />
+        )}
       </div>
     )
   }
@@ -3127,13 +3164,14 @@ function Reports({ activePage = 'Store performance' }: { activePage?: string }) 
     return (
       <div className="reports-workspace">
         <div className="marketing-breadcrumb"><span>Reports</span><b>Smart analytics</b></div>
+        <p className="action-result">{notice}</p>
         <section className="smart-analytics-hero">
           <div>
             <span>Insights</span>
             <h1>Smart analytics</h1>
             <p>Analytics cards mirror Salla's decision-focused screen: compact insights, suggested actions, and clear empty states until store data exists.</p>
           </div>
-          <button><Sparkles size={18} /> Generate insights</button>
+          <button onClick={() => setDialog('Generate insights')}><Sparkles size={18} /> Generate insights</button>
         </section>
         <div className="smart-analytics-grid">
           {smartCards.map(([title, body]) => (
@@ -3141,10 +3179,18 @@ function Reports({ activePage = 'Store performance' }: { activePage?: string }) 
               <Sparkles size={21} />
               <h3>{title}</h3>
               <p>{body}</p>
-              <button>View details</button>
+              <button onClick={() => setDialog(title)}>View details</button>
             </article>
           ))}
         </div>
+        {dialog && (
+          <PeopleActionDialog
+            title={dialog}
+            subject="Smart analytics"
+            rows={[['Insight', dialog, 'Selected'], ['Confidence', 'Preview only', 'Frontend'], ['Suggested action', 'Open related page', 'Ready']]}
+            onClose={() => { setNotice(`تم فتح ${dialog} ضمن التحليلات الذكية.`); setDialog(null) }}
+          />
+        )}
       </div>
     )
   }
@@ -3153,24 +3199,36 @@ function Reports({ activePage = 'Store performance' }: { activePage?: string }) 
     return (
       <div className="reports-workspace">
         <div className="marketing-breadcrumb"><span>Reports</span><b>{activePage === 'Manage reports' ? 'Manage reports' : 'Reports'}</b></div>
+        <p className="action-result">{notice}</p>
         <section className="saved-reports-card">
           <div className="saved-reports-head">
             <div>
               <h1>{activePage === 'Manage reports' ? 'Manage reports' : 'Reports'}</h1>
               <p>Saved and scheduled reports appear here with the same compact control style used across the dashboard.</p>
             </div>
-            <button><Plus size={18} /> Create report</button>
+            <button onClick={() => setDialog('Create report')}><Plus size={18} /> Create report</button>
           </div>
           <div className="saved-report-list">
             {savedReports.map((report, index) => (
-              <button key={report}>
+              <button className={selectedSavedReport === report ? 'active' : ''} key={report} onClick={() => setSelectedSavedReport(report)}>
                 <span>{report}</span>
                 <small>{index % 2 ? 'Scheduled weekly' : 'Manual report'}</small>
-                <MoreHorizontal size={18} />
+                <MoreHorizontal size={18} onClick={(event) => { event.stopPropagation(); setDialog(`Manage ${report}`) }} />
               </button>
             ))}
           </div>
+          <Panel title={`${selectedSavedReport} details`}>
+            <Table rows={[['Schedule', selectedSavedReport.includes('Daily') ? 'Daily' : 'Manual', 'Ready'], ['Recipients', 'Store owner', 'Preview'], ['Last run', 'No live data yet', 'Empty']]} />
+          </Panel>
         </section>
+        {dialog && (
+          <PeopleActionDialog
+            title={dialog}
+            subject={selectedSavedReport}
+            rows={[['Report', selectedSavedReport, 'Selected'], ['Schedule', 'Editable', 'Visual'], ['Export', 'Deferred', 'Backend later']]}
+            onClose={() => { setNotice(`تم تنفيذ ${dialog} على ${selectedSavedReport}.`); setDialog(null) }}
+          />
+        )}
       </div>
     )
   }
@@ -3178,6 +3236,7 @@ function Reports({ activePage = 'Store performance' }: { activePage?: string }) 
   return (
     <div className="reports-workspace">
       <div className="marketing-breadcrumb"><span>Reports</span><b>Store performance</b></div>
+      <p className="action-result">{notice}</p>
       <div className="reports-layout">
         <aside className="reports-side-list">
           {reportMenu.map((item) => (
@@ -3190,20 +3249,20 @@ function Reports({ activePage = 'Store performance' }: { activePage?: string }) 
         </aside>
         <section className="reports-main">
           <div className="reports-datebar">
-            <button><CalendarDays size={18} /> Jul 2026, 28 - Aug 2026, 04 <ChevronDown size={17} /></button>
-            <button aria-label="More report actions"><MoreHorizontal size={18} /></button>
+            <button onClick={() => setDialog('Change date range')}><CalendarDays size={18} /> Jul 2026, 28 - Aug 2026, 04 <ChevronDown size={17} /></button>
+            <button aria-label="More report actions" onClick={() => setDialog('Report actions')}><MoreHorizontal size={18} /></button>
           </div>
           <div className="reports-metric-grid">
             {reportMetrics.map(([title, value, help]) => (
               <article className="report-metric-card" key={title}>
                 <div>
                   <h3>{title}</h3>
-                  <button aria-label={`${title} info`} title={help}><Info size={15} /></button>
+                  <button aria-label={`${title} info`} title={help} onClick={() => setDialog(`${title} info`)}><Info size={15} /></button>
                 </div>
                 <strong>{value}</strong>
                 <footer>
                   <span className="report-change-pill">0%</span>
-                  <button aria-label={`Refresh ${title}`}><RefreshCcw size={14} /></button>
+                  <button aria-label={`Refresh ${title}`} onClick={() => setNotice(`تم تحديث بطاقة ${title} بصرياً.`)}><RefreshCcw size={14} /></button>
                 </footer>
               </article>
             ))}
@@ -3212,7 +3271,7 @@ function Reports({ activePage = 'Store performance' }: { activePage?: string }) 
             <section className="reports-summary-card chart">
               <div>
                 <h2>{activeReport}</h2>
-                <button><MoreHorizontal size={18} /></button>
+                <button onClick={() => setDialog(`${activeReport} options`)}><MoreHorizontal size={18} /></button>
               </div>
               <div className="report-empty-chart">
                 {[22, 38, 31, 48, 27, 42, 36].map((height, index) => <i style={{ height: `${height}%` }} key={index} />)}
@@ -3222,7 +3281,7 @@ function Reports({ activePage = 'Store performance' }: { activePage?: string }) 
             <section className="reports-summary-card">
               <div>
                 <h2>Report details</h2>
-                <button><Filter size={17} /></button>
+                <button onClick={() => setDialog('Filter report details')}><Filter size={17} /></button>
               </div>
               <ul className="report-detail-list">
                 <li><span>Orders</span><b>0</b></li>
@@ -3234,6 +3293,14 @@ function Reports({ activePage = 'Store performance' }: { activePage?: string }) 
           </div>
         </section>
       </div>
+      {dialog && (
+        <PeopleActionDialog
+          title={dialog}
+          subject={activeReport}
+          rows={[['Report', activeReport, 'Selected'], ['Range', 'Jul 28 - Aug 04, 2026', 'Ready'], ['Data state', 'No live data yet', 'Frontend']]}
+          onClose={() => { setNotice(`تم تنفيذ ${dialog} في تقرير ${activeReport}.`); setDialog(null) }}
+        />
+      )}
     </div>
   )
 }
@@ -3340,37 +3407,140 @@ function Payments() {
   )
 }
 
-function Apps() {
-  const [activeApp, setActiveApp] = useState(apps[0])
-  const [activeCategory, setActiveCategory] = useState('All')
+function Apps({ activePage = 'App Store' }: { activePage?: string }) {
+  const normalizedPage = activePage === 'Settings' ? 'My apps' : activePage
+  const [activeApp, setActiveApp] = useState(sampleApps.find((app) => normalizedPage === 'My apps' ? app.source === 'My apps' : normalizedPage === 'Webhooks' ? app.source === 'Webhooks' : true) ?? sampleApps[0])
+  const [activeCategory, setActiveCategory] = useState(normalizedPage === 'My apps' ? 'Installed' : normalizedPage === 'Webhooks' ? 'Developer' : 'All')
+  const [dialog, setDialog] = useState<string | null>(null)
+  const [notice, setNotice] = useState('التطبيقات جاهزة كواجهات مرئية: متجر التطبيقات، تطبيقاتي، الخبراء، والويبهوكس.')
+  useEffect(() => {
+    const nextCategory = normalizedPage === 'My apps' ? 'Installed' : normalizedPage === 'Webhooks' ? 'Developer' : 'All'
+    const nextApp = sampleApps.find((app) => normalizedPage === 'My apps' ? app.source === 'My apps' : normalizedPage === 'Webhooks' ? app.source === 'Webhooks' : true) ?? sampleApps[0]
+    setActiveCategory(nextCategory)
+    setActiveApp(nextApp)
+    setNotice(`تم فتح ${normalizedPage} ضمن التطبيقات والسجلات.`)
+  }, [normalizedPage])
+  const visibleApps = sampleApps.filter((app) => {
+    if (normalizedPage === 'My apps') return app.source === 'My apps'
+    if (normalizedPage === 'Webhooks') return app.source === 'Webhooks'
+    if (normalizedPage === 'Experts') return ['Marketing', 'Sales', 'Developer'].includes(app.category)
+    if (activeCategory === 'All') return true
+    if (activeCategory === 'Installed') return app.source === 'My apps'
+    return app.category === activeCategory
+  })
   return (
     <div className="page-stack">
-      <section className="apps-hero"><h1>Power your store with the right tools</h1><button>Browse all categories</button></section>
-      <SelectableTabs items={['All', 'Marketing', 'Sales', 'Shipping', 'Accounting', 'Installed']} activeItem={activeCategory} onChange={setActiveCategory} />
-      <section className="apps-grid">
-        {apps.map((app, index) => (
-          <article className={activeApp === app ? 'active-card' : ''} key={app}>
-            <span>Marketing</span>
-            <h3>{app}</h3>
-            <p>{index % 2 ? 'Start From 48.08 AED / Monthly' : 'Free Trial 7 Days'}</p>
+      <p className="action-result">{notice}</p>
+      <section className="apps-hero">
+        <div>
+          <span>{normalizedPage}</span>
+          <h1>{normalizedPage === 'My apps' ? 'Installed apps' : normalizedPage === 'Webhooks' ? 'Webhooks' : normalizedPage === 'Experts' ? 'Experts and setup partners' : 'Power your store with the right tools'}</h1>
+          <p>واجهة تشبه سلة: قائمة تطبيقات، حالة تركيب، صلاحيات، وتفاصيل إعداد من غير ربط خلفي حالياً.</p>
+        </div>
+        <button onClick={() => setDialog(normalizedPage === 'Webhooks' ? 'Create webhook' : 'Browse all categories')}>{normalizedPage === 'Webhooks' ? 'Create webhook' : 'Browse all categories'}</button>
+      </section>
+      <SelectableTabs items={['All', 'Marketing', 'Sales', 'Support', 'Accounting', 'Developer', 'Installed']} activeItem={activeCategory} onChange={setActiveCategory} />
+      <div className="apps-workspace">
+        <section className="apps-grid">
+          {visibleApps.map((app) => (
+          <article className={activeApp.name === app.name ? 'active-card' : ''} key={app.name}>
+            <span>{app.category}</span>
+            <h3>{app.name}</h3>
+            <p>{app.plan}</p>
+            <em>{app.status}</em>
             <button onClick={() => setActiveApp(app)}>View</button>
           </article>
-        ))}
-      </section>
-      <Panel title={`${activeApp} app page`}>
-        <Table rows={[['Category', activeCategory, 'Selected'], ['Plan', 'Free trial available', 'Visual only'], ['Permissions', 'Products, orders, customers'], ['Status', 'Ready to install']]} />
-      </Panel>
+          ))}
+        </section>
+        <aside className="apps-detail-panel">
+          <div className="detail-head">
+            <div><span>App details</span><h2>{activeApp.name}</h2></div>
+            <em>{activeApp.status}</em>
+          </div>
+          <Table rows={[
+            ['Category', activeApp.category, activeCategory],
+            ['Plan', activeApp.plan, 'Visual only'],
+            ['Permissions', activeApp.permissions, 'Preview'],
+            ['Status', activeApp.status, activeApp.source],
+          ]} />
+          <div className="detail-actions">
+            <button onClick={() => setDialog(activeApp.status === 'Installed' || activeApp.status === 'Configured' ? 'Configure app' : 'Install app')}>{activeApp.status === 'Installed' || activeApp.status === 'Configured' ? 'Configure app' : 'Install app'}</button>
+            <button onClick={() => setDialog('Permissions')}>Permissions</button>
+            <button onClick={() => setDialog('Activity log')}>Activity log</button>
+          </div>
+        </aside>
+      </div>
+      {dialog && (
+        <PeopleActionDialog
+          title={dialog}
+          subject={activeApp.name}
+          rows={[['App', activeApp.name, activeApp.status], ['Permissions', activeApp.permissions, 'Preview'], ['Page', normalizedPage, 'Selected']]}
+          onClose={() => { setNotice(`تم تنفيذ ${dialog} لتطبيق ${activeApp.name} كواجهة مرئية.`); setDialog(null) }}
+        />
+      )}
     </div>
   )
 }
 
-function Logs() {
+function Logs({ activePage = 'SMS log' }: { activePage?: string }) {
+  const logTypes = ['SMS log', 'Activity history', 'Export log']
+  const [activeLog, setActiveLog] = useState(logTypes.includes(activePage) ? activePage : 'SMS log')
+  const [selectedLog, setSelectedLog] = useState(sampleLogs.find((log) => log.type === activeLog) ?? sampleLogs[0])
+  const [dialog, setDialog] = useState<string | null>(null)
+  const [notice, setNotice] = useState('السجلات تعرض أحداث تجريبية مع تفاصيل وفلاتر وتصدير مرئي.')
+  useEffect(() => {
+    const nextLog = logTypes.includes(activePage) ? activePage : 'SMS log'
+    setActiveLog(nextLog)
+    setSelectedLog(sampleLogs.find((log) => log.type === nextLog) ?? sampleLogs[0])
+    setNotice(`تم فتح ${nextLog} ضمن السجلات.`)
+  }, [activePage])
+  const visibleLogs = sampleLogs.filter((log) => log.type === activeLog)
+  const changeLogType = (type: string) => {
+    setActiveLog(type)
+    setSelectedLog(sampleLogs.find((log) => log.type === type) ?? sampleLogs[0])
+  }
+
   return (
     <div className="page-stack">
-      <LockedFeature title="Activity Log" body="Full tracking of all your store activity" />
-      <Panel title="Log preview">
-        <Table rows={[['SMS log', 'No messages yet', 'Basic'], ['Activity history', 'Available on Plus', 'Locked'], ['Export log', 'No exports yet', 'Empty']]} />
-      </Panel>
+      <p className="action-result">{notice}</p>
+      <LockedFeature title={activeLog} body="Full tracking of all your store activity" />
+      <SelectableTabs items={logTypes} activeItem={activeLog} onChange={changeLogType} />
+      <div className="records-layout">
+        <section className="record-list">
+          {visibleLogs.map((log) => (
+            <button className={selectedLog.title === log.title ? 'active' : ''} key={log.title} onClick={() => setSelectedLog(log)}>
+              <span><b>{log.title}</b><small>{log.time}</small></span>
+              <span>{log.actor}<small>{log.type}</small></span>
+              <em>{log.status}</em>
+            </button>
+          ))}
+        </section>
+        <aside className="record-detail">
+          <div className="detail-head">
+            <div><span>Log details</span><h2>{selectedLog.title}</h2></div>
+            <em>{selectedLog.status}</em>
+          </div>
+          <Table rows={[
+            ['Type', selectedLog.type, activeLog],
+            ['Actor', selectedLog.actor, selectedLog.time],
+            ['Status', selectedLog.status, 'Preview'],
+            ['Retention', '90 days', 'Frontend only'],
+          ]} />
+          <div className="detail-actions">
+            <button onClick={() => setDialog('View payload')}>View payload</button>
+            <button onClick={() => setDialog('Filter logs')}>Filter</button>
+            <button onClick={() => setDialog('Export logs')}>Export</button>
+          </div>
+        </aside>
+      </div>
+      {dialog && (
+        <PeopleActionDialog
+          title={dialog}
+          subject={selectedLog.title}
+          rows={[['Log', selectedLog.title, selectedLog.status], ['Actor', selectedLog.actor, selectedLog.time], ['Type', selectedLog.type, 'Selected']]}
+          onClose={() => { setNotice(`تم تنفيذ ${dialog} على ${selectedLog.title}.`); setDialog(null) }}
+        />
+      )}
     </div>
   )
 }
@@ -3378,32 +3548,45 @@ function Logs() {
 function SettingsPage({ initialSetting = 'Your profile' }: { initialSetting?: string }) {
   const normalizedInitial = settingsCatalog.find((item) => item.key === initialSetting || item.title === initialSetting)?.key ?? settingsCatalog[0].key
   const [activeSetting, setActiveSetting] = useState(normalizedInitial)
+  const [saveState, setSaveState] = useState('كل إعدادات هذه الصفحة جاهزة كواجهات مرئية.')
   const activeDetail = settingsCatalog.find((item) => item.key === activeSetting) ?? settingsCatalog[0]
+  const changeSetting = (setting: string) => {
+    setActiveSetting(setting)
+    setSaveState(`تم فتح إعدادات ${setting}.`)
+  }
 
   return (
-    <PageShell crumb="Settings" title={activeDetail.title} aside={<FilterList title="Settings" items={settingsCatalog.map((item) => item.key)} activeItem={activeSetting} onItemClick={setActiveSetting} />}>
+    <PageShell crumb="Settings" title={activeDetail.title} aside={<FilterList title="Settings" items={settingsCatalog.map((item) => item.key)} activeItem={activeSetting} onItemClick={changeSetting} />}>
+      <p className="action-result">{saveState}</p>
       <div className="settings-overview">
         <section>
           <span>Settings</span>
           <h1>{activeDetail.title}</h1>
           <p>{activeDetail.summary}</p>
         </section>
-        <button>Save changes</button>
+        <button onClick={() => setSaveState(`تم حفظ ${activeDetail.title} كحالة واجهة.`)}>Save changes</button>
       </div>
-      <SettingsContent detail={activeDetail} />
+      <SettingsContent detail={activeDetail} onFeedback={setSaveState} />
     </PageShell>
   )
 }
 
-function SettingsContent({ detail, compact = false }: { detail: typeof settingsCatalog[number]; compact?: boolean }) {
+function SettingsContent({ detail, compact = false, onFeedback }: { detail: typeof settingsCatalog[number]; compact?: boolean; onFeedback?: (message: string) => void }) {
   const [activeControl, setActiveControl] = useState<string | null>(null)
   const [activeCard, setActiveCard] = useState<string>('Configuration')
+  const [dialog, setDialog] = useState<string | null>(null)
+  const [toggleStates, setToggleStates] = useState<Record<string, boolean>>({})
   const deepControls = settingsDeepControls[detail.key] ?? []
   const cards = [
     ['Configuration', detail.summary, 'Open'],
     ['Access & visibility', 'Control where this setting appears in the merchant workflow.', 'Manage'],
     ['Activity', 'Preview changes, alerts, and recent actions for this settings area.', 'View log'],
   ]
+  const selectControl = (label: string, isLink?: boolean) => {
+    setActiveControl(label)
+    onFeedback?.(`تم تحديد ${label} داخل ${detail.title}.`)
+    if (isLink) setDialog(label)
+  }
 
   return (
     <div className={compact ? 'settings-content compact' : 'settings-content'}>
@@ -3419,7 +3602,7 @@ function SettingsContent({ detail, compact = false }: { detail: typeof settingsC
                 <button
                   className={activeControl === control.label ? 'switch-row active' : 'switch-row'}
                   key={control.label}
-                  onClick={() => setActiveControl(control.label)}
+                  onClick={() => selectControl(control.label, control.link)}
                 >
                   <span>
                     <b>{control.label}</b>
@@ -3442,7 +3625,7 @@ function SettingsContent({ detail, compact = false }: { detail: typeof settingsC
           <article className={activeCard === title ? 'active-card' : ''} key={title}>
             <b>{title}</b>
             <p>{body}</p>
-            <button onClick={() => setActiveCard(title)}>{action}</button>
+            <button onClick={() => { setActiveCard(title); onFeedback?.(`تم فتح بطاقة ${title} في ${detail.title}.`) }}>{action}</button>
           </article>
         ))}
       </div>
@@ -3455,9 +3638,17 @@ function SettingsContent({ detail, compact = false }: { detail: typeof settingsC
       </Panel>
       <div className="settings-toggles">
         {detail.toggles.map((toggle, index) => (
-          <label key={toggle}>{toggle}<input type="checkbox" defaultChecked={index === 0} /></label>
+          <label key={toggle}>{toggle}<input type="checkbox" checked={toggleStates[toggle] ?? index === 0} onChange={(event) => { setToggleStates((current) => ({ ...current, [toggle]: event.target.checked })); onFeedback?.(`تم ${event.target.checked ? 'تفعيل' : 'إيقاف'} ${toggle}.`) }} /></label>
         ))}
       </div>
+      {dialog && (
+        <PeopleActionDialog
+          title={dialog}
+          subject={detail.title}
+          rows={[['Setting', detail.title, 'Selected'], ['Control', dialog, 'Linked'], ['State', 'Preview panel ready', 'Frontend']]}
+          onClose={() => { onFeedback?.(`تم فتح إعداد ${dialog} المرتبط.`); setDialog(null) }}
+        />
+      )}
     </div>
   )
 }
