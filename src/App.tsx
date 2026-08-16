@@ -399,7 +399,7 @@ function App() {
       <section className="workspace">
         {activePageKey ? <DynamicPage pageKey={activePageKey} setScreen={setScreen} setActivePageKey={setActivePageKey} /> : (
           <>
-            {screen === 'summary' && <StoreSummary />}
+            {screen === 'summary' && <StoreSummary setScreen={setScreen} setActivePageKey={setActivePageKey} />}
             {screen === 'orders' && <Orders />}
             {screen === 'products' && <Products />}
             {screen === 'marketing' && <Marketing />}
@@ -561,9 +561,9 @@ function PublicHome({ setScreen }: { setScreen: (screen: Screen) => void }) {
         </div>
         <div>
           <h3>المنصة</h3>
-          <button>الحلول</button>
-          <button>الأسعار</button>
-          <button>الثيمات</button>
+          <button onClick={() => scrollTo('solutions')}>الحلول</button>
+          <button onClick={() => scrollTo('pricing')}>الأسعار</button>
+          <button onClick={() => scrollTo('builder')}>الثيمات</button>
         </div>
         <div>
           <h3>لوحة التحكم</h3>
@@ -1228,21 +1228,69 @@ function SubNav({
   )
 }
 
-function StoreSummary() {
+function StoreSummary({
+  setScreen,
+  setActivePageKey,
+}: {
+  setScreen: (screen: Screen) => void
+  setActivePageKey: (key: string | null) => void
+}) {
+  const [notice, setNotice] = useState('كل شيء جاهز للمراجعة')
+  const go = (screen: DashboardScreen, pageKey?: string) => {
+    setScreen(screen)
+    setActivePageKey(pageKey ?? null)
+  }
+
+  const setupRoutes: Record<string, { screen: DashboardScreen; pageKey?: string; note: string }> = {
+    'Add a support number': { screen: 'settings', pageKey: 'Settings:General', note: 'فتحنا إعدادات المتجر لإضافة بيانات التواصل.' },
+    'Set up your domain': { screen: 'store', pageKey: 'Online Store:Domain', note: 'فتحنا صفحة الدومين كواجهة جاهزة، والربط الفعلي مؤجل.' },
+    'Add your first product': { screen: 'products', pageKey: 'Products:New product', note: 'فتحنا إضافة منتج جديد.' },
+    'Set your pickup location': { screen: 'shipping', pageKey: 'Shipping:Shipping & delivery', note: 'فتحنا إعدادات الشحن والاستلام.' },
+    'Design your store': { screen: 'store', pageKey: 'Online Store:Store design', note: 'فتحنا تصميم المتجر.' },
+    'Verify your store': { screen: 'payments', pageKey: 'Payments:Store verification', note: 'فتحنا توثيق المتجر كواجهة مؤجلة الربط.' },
+  }
+
   return (
     <div className="page-stack">
-      <Alert />
+      <Alert onResend={() => setNotice('تم تجهيز رسالة تفعيل البريد للعرض فقط.')} />
       <section className="setup">
         <div className="setup-title">
           <h1>Continue setting up your store 🚀</h1>
           <b>1/7</b>
         </div>
         <div className="progress"><span /></div>
+        <section className="summary-command">
+          <div>
+            <span>حالة المتجر</span>
+            <h2>{notice}</h2>
+            <p>كل اختصار في هذه الصفحة يفتح شاشة فعلية داخل لوحة مدار، والربط الخلفي مؤجل للإنجن.</p>
+          </div>
+          <div>
+            <button onClick={() => go('orders')}>الطلبات</button>
+            <button onClick={() => go('products')}>المنتجات</button>
+            <button onClick={() => go('store', 'Online Store:Store design')}>تصميم المتجر</button>
+            <button onClick={() => go('reports')}>التقارير</button>
+          </div>
+        </section>
+        <div className="summary-metrics">
+          {[
+            ['الطلبات اليوم', '0', 'لا توجد طلبات بعد'],
+            ['المنتجات', '4', 'مسودات جاهزة'],
+            ['نسبة التجهيز', '14%', 'خطوة واحدة مكتملة'],
+            ['حالة النشر', 'مسودة', 'جاهزة للمراجعة'],
+          ].map(([label, value, helper]) => (
+            <article key={label}>
+              <span>{label}</span>
+              <b>{value}</b>
+              <small>{helper}</small>
+            </article>
+          ))}
+        </div>
         <div className="setup-grid">
           <article className="setup-card">
             <div className="setup-card-head">
               <h2>Add your branding</h2>
-              <button>⌃</button>
+              <button aria-label="طي إعدادات الهوية" onClick={() => setNotice('قسم الهوية مفتوح وجاهز للتعديل.')}>⌃</button>
             </div>
             <Label title="Store name" helper="Enter a name for your store" placeholder="Enter your store name" />
             <label className="field">
@@ -1254,10 +1302,10 @@ function StoreSummary() {
             <div className="upload">
               <span><Palette size={30} /></span>
               <b>Drag & drop image</b>
-              <button>or browse device</button>
+              <button onClick={() => setNotice('اختيار الشعار جاهز كواجهة، ورفع الملفات يتفعل مع الباك اند.')}>or browse device</button>
             </div>
             <Label title="Store primary color" helper="Pick a color that matches your brand" placeholder="#000000" />
-            <button className="save">Save</button>
+            <button className="save" onClick={() => setNotice('تم حفظ هوية المتجر بصرياً.')}>Save</button>
           </article>
           <aside className="preview-card">
             <h3>Your branding appears in your store's header and footer</h3>
@@ -1269,25 +1317,49 @@ function StoreSummary() {
             </div>
           </aside>
         </div>
-        <Checklist />
+        <Checklist
+          onOpen={(step) => {
+            const target = setupRoutes[step]
+            if (!target) return
+            setNotice(target.note)
+            go(target.screen, target.pageKey)
+          }}
+        />
+        <section className="summary-panels">
+          <Panel title="نشاط حديث">
+            <Table rows={[
+              ['الآن', 'تم تجهيز واجهة لوحة التحكم', 'جاهز'],
+              ['قبل قليل', 'تم توحيد اللغة والاتجاه', 'مكتمل'],
+              ['اليوم', 'باقي الصفحات تعمل كواجهات بدون باك اند', 'قيد العمل'],
+            ]} />
+          </Panel>
+          <Panel title="اختصارات الإدارة">
+            <div className="summary-shortcuts">
+              <button onClick={() => go('marketing')}>الكوبونات والحملات</button>
+              <button onClick={() => go('customers')}>العملاء</button>
+              <button onClick={() => go('settings')}>الإعدادات</button>
+              <button onClick={() => go('apps', 'Apps & Logs:My apps')}>التطبيقات</button>
+            </div>
+          </Panel>
+        </section>
       </section>
     </div>
   )
 }
 
-function Alert() {
+function Alert({ onResend }: { onResend: () => void }) {
   return (
     <section className="email-alert" dir="rtl">
       <div>
         <h2>تفعيل البريد الإلكتروني</h2>
         <p>يرجى تفعيل بريدك الإلكتروني للوصول الكامل إلى جميع مزايا المتجر.</p>
       </div>
-      <button>إعادة إرسال رابط التفعيل</button>
+      <button onClick={onResend}>إعادة إرسال رابط التفعيل</button>
     </section>
   )
 }
 
-function Checklist() {
+function Checklist({ onOpen }: { onOpen: (step: string) => void }) {
   return (
     <div className="checklist">
       {setupTasks.map(([step, action, helper], index) => (
@@ -1295,7 +1367,7 @@ function Checklist() {
           <span>{index + 2}</span>
           <b>{step}</b>
           <small>{helper}</small>
-          <button>{action}</button>
+          <button onClick={() => onOpen(step)}>{action}</button>
         </article>
       ))}
     </div>
