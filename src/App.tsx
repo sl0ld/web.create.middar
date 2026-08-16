@@ -1226,8 +1226,8 @@ function SubNav({
   return (
     <nav className="sub-nav">
       <div>
-        {active.tabs.map((tab) => (
-          <span className="sub-nav-item" key={tab}>
+        {active.tabs.map((tab, index) => (
+          <span className="sub-nav-item" key={`${active.id}-${tab}-${index}`}>
             <button
               aria-label={tab}
               className={activeTab === tab || ((active.id === 'orders' || active.id === 'products') && tab === 'More' && subMoreOpen) ? 'active' : ''}
@@ -1238,9 +1238,9 @@ function SubNav({
             </button>
             {(active.id === 'orders' || active.id === 'products') && tab === 'More' && subMoreOpen && (
               <div className="sub-more-menu">
-                {moreItems.map((item) => (
+                {moreItems.map((item, moreIndex) => (
                   <button
-                    key={item}
+                    key={`${active.id}-more-${item}-${moreIndex}`}
                     onClick={() => {
                       setScreen(active.id)
                       setActivePageKey(`${group}:${item}`)
@@ -3670,8 +3670,8 @@ function SettingIcon({ name }: { name: string }) {
 function SelectableTabs({ items, activeItem, onChange }: { items: string[]; activeItem: string; onChange: (item: string) => void }) {
   return (
     <div className="channel-tabs">
-      {items.map((item) => (
-        <button className={activeItem === item ? 'active' : ''} key={item} onClick={() => onChange(item)}>
+      {items.map((item, index) => (
+        <button className={activeItem === item ? 'active' : ''} key={`${item}-${index}`} onClick={() => onChange(item)}>
           {item}
         </button>
       ))}
@@ -3711,7 +3711,7 @@ function FilterList({
         <button
           aria-label={item}
           className={(activeItem ? item === activeItem : index === 0) ? 'active' : ''}
-          key={item}
+          key={`${title}-${item}-${index}`}
           onClick={() => onItemClick?.(item)}
         >
           {item}{index < 4 && <small>0</small>}
@@ -3795,7 +3795,7 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 }
 
 function Table({ rows }: { rows: string[][] }) {
-  return <div className="table">{rows.map((row) => <div key={row.join('-')}>{row.map((cell) => <span key={cell}>{cell}</span>)}</div>)}</div>
+  return <div className="table">{rows.map((row, rowIndex) => <div key={`${row.join('-')}-${rowIndex}`}>{row.map((cell, cellIndex) => <span key={`${cell}-${cellIndex}`}>{cell}</span>)}</div>)}</div>
 }
 
 function Carrier({ name, active, onSelect }: { name: string; active?: boolean; onSelect?: () => void }) {
