@@ -144,6 +144,11 @@ const sampleProducts = [
   { name: 'بطاقة هدية', sku: 'MD-GFT-050', price: '5.000 BHD', stock: 'Digital', status: 'Hidden' },
   { name: 'مجموعة تغليف', sku: 'MD-PKG-003', price: '2.000 BHD', stock: '3', status: 'Nearly out' },
 ]
+const sampleCoupons = [
+  { name: 'خصم الإطلاق', code: 'LAUNCH20', type: 'Percentage', status: 'Active', usage: '0 / 100', date: 'ينتهي بعد 14 يوم' },
+  { name: 'شحن مجاني', code: 'SHIPFREE', type: 'Free shipping', status: 'Scheduled', usage: '0 / 50', date: 'يبدأ غداً' },
+  { name: 'عملاء VIP', code: 'VIP15', type: 'Fixed discount', status: 'Inactive', usage: '12 / 80', date: 'متوقف مؤقتاً' },
+]
 const setupTasks = [
   ['Add a support number', 'Add', 'Required before launch'],
   ['Set up your domain', 'Set up', 'Default domain is active'],
@@ -2346,20 +2351,54 @@ function Marketing({ activePage = 'Coupons' }: { activePage?: string }) {
   const [activeState, setActiveState] = useState(couponStates[0])
   const [searchTerm, setSearchTerm] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
+  const [selectedCoupon, setSelectedCoupon] = useState<(typeof sampleCoupons)[number] | null>(sampleCoupons[0])
+  const [actionDialog, setActionDialog] = useState<string | null>(null)
+  const [notice, setNotice] = useState('كل أدوات التسويق جاهزة كواجهات مرئية.')
   const isCoupons = activePage === 'Coupons' || activePage === 'New coupon'
+  const visibleCoupons = sampleCoupons.filter((coupon) => {
+    const matchesState = activeState === 'All' || coupon.status === activeState
+    const text = `${coupon.name} ${coupon.code} ${coupon.type}`.toLowerCase()
+    return matchesState && text.includes(searchTerm.toLowerCase())
+  })
+  const marketingCards = [
+    ['Promotional offers', 'عروض ترويجية للمنتجات والسلات مع حالة نشر ومعاينة.'],
+    ['Marketing calendar', 'تقويم حملات أسبوعي يوضح الحملات المجدولة والنشطة.'],
+    ['Cashback offers', 'استرداد نقدي مرئي مع شرائح العملاء وشروط الاستخدام.'],
+    ['Abandoned carts', 'سلات متروكة برسائل تذكير وحالات إرسال.'],
+    ['Customer wallet', 'قواعد محفظة العميل ونقاط الرصيد التجريبية.'],
+    ['SEO', 'إعدادات العناوين والوصف ومعاينة نتائج البحث.'],
+    ['Loyalty program', 'مستويات ولاء ومكافآت جاهزة كواجهة.'],
+    ['Influencers', 'قائمة مؤثرين وروابط تتبع تجريبية.'],
+  ]
 
   if (!isCoupons) {
+    const activeCard = marketingCards.find(([title]) => title === activePage) ?? marketingCards[0]
     return (
       <div className="marketing-workspace">
         <div className="marketing-breadcrumb"><span>Marketing</span><span>›</span><b>{activePage}</b></div>
+        <p className="action-result">{notice}</p>
         <section className="marketing-feature-card">
           <span>{activePage}</span>
           <h2>{activePage === 'Settings' ? 'Marketing settings' : `${activePage} workspace`}</h2>
-          <p>This screen follows Salla's Marketing navigation and is ready for its detailed visual flow.</p>
-          <button>Open guide</button>
+          <p>{activePage === 'Settings' ? 'تحكم في إعدادات التسويق الافتراضية، الكوبونات، التتبع، والسلات المتروكة.' : activeCard[1]}</p>
+          <button onClick={() => setNotice(`تم فتح دليل ${activePage} كواجهة مرئية.`)}>Open guide</button>
         </section>
-        <section className="marketing-table-card">
-          <Empty title={`No ${activePage.toLowerCase()} yet`} body="New records will appear here after connecting the backend." />
+        <section className="marketing-grid-cards">
+          {marketingCards.slice(0, 6).map(([title, body]) => (
+            <article className={title === activePage ? 'active-card' : ''} key={title}>
+              <Megaphone size={22} />
+              <h3>{title}</h3>
+              <p>{body}</p>
+              <button onClick={() => setNotice(`تم تجهيز ${title} للمعاينة.`)}>Preview</button>
+            </article>
+          ))}
+        </section>
+        <section className="marketing-table-card compact">
+          <Table rows={[
+            ['الحالة', activePage, 'جاهز'],
+            ['السجلات', '3 عناصر تجريبية', 'واجهة فقط'],
+            ['الإجراء التالي', 'ربط البيانات لاحقاً', 'مؤجل'],
+          ]} />
         </section>
       </div>
     )
@@ -2368,6 +2407,7 @@ function Marketing({ activePage = 'Coupons' }: { activePage?: string }) {
   return (
     <div className="marketing-workspace">
       <div className="marketing-breadcrumb"><span>Marketing</span><span>›</span><b>Coupons</b></div>
+      <p className="action-result">{notice}</p>
       <section className="marketing-table-card">
         <h2>Discount coupons</h2>
         <div className="marketing-toolbar">
@@ -2382,22 +2422,75 @@ function Marketing({ activePage = 'Coupons' }: { activePage?: string }) {
             <button className={activeState === state ? 'active' : ''} key={state} onClick={() => setActiveState(state)}>{state}</button>
           ))}
         </div>
-        <div className="coupon-skeleton-table">
-          {Array.from({ length: 7 }).map((_, row) => (
-            <div key={row}>
-              <i />
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-              <b />
-            </div>
-          ))}
+        <div className="coupon-data-table">
+          <div className="coupon-data-head"><span>الكوبون</span><span>النوع</span><span>الحالة</span><span>الاستخدام</span><span>التاريخ</span><span /></div>
+          {visibleCoupons.length ? visibleCoupons.map((coupon) => (
+            <button className={selectedCoupon?.code === coupon.code ? 'active' : ''} key={coupon.code} onClick={() => setSelectedCoupon(coupon)}>
+              <span><b>{coupon.name}</b><small>{coupon.code}</small></span>
+              <span>{coupon.type}</span>
+              <em>{coupon.status}</em>
+              <span>{coupon.usage}</span>
+              <span>{coupon.date}</span>
+              <MoreHorizontal size={18} />
+            </button>
+          )) : <Empty title="No results found" body="Try changing coupon status or search term." />}
         </div>
+        {selectedCoupon && (
+          <section className="coupon-detail-strip">
+            <div><span>الكوبون المحدد</span><b>{selectedCoupon.name}</b><small>{selectedCoupon.code}</small></div>
+            <div className="detail-actions">
+              <button onClick={() => setActionDialog('Preview coupon')}>Preview</button>
+              <button onClick={() => setActionDialog('Edit coupon')}>Edit</button>
+              <button onClick={() => setActionDialog('Duplicate coupon')}>Duplicate</button>
+            </div>
+          </section>
+        )}
       </section>
       {filterOpen && <MarketingFilterDialog activeState={activeState} setActiveState={setActiveState} onClose={() => setFilterOpen(false)} />}
+      {actionDialog && selectedCoupon && (
+        <MarketingActionDialog
+          title={actionDialog}
+          coupon={selectedCoupon}
+          onClose={() => {
+            setNotice(`تم تنفيذ إجراء ${actionDialog} على ${selectedCoupon.name} كواجهة مرئية.`)
+            setActionDialog(null)
+          }}
+        />
+      )}
     </div>
+  )
+}
+
+function MarketingActionDialog({
+  title,
+  coupon,
+  onClose,
+}: {
+  title: string
+  coupon: (typeof sampleCoupons)[number]
+  onClose: () => void
+}) {
+  return (
+    <section className="orders-dialog-backdrop">
+      <dialog className="orders-quick-dialog" open>
+        <header><h2>{title}</h2><button aria-label={`Close ${title}`} onClick={onClose}><X size={18} /></button></header>
+        <div className="quick-order-grid">
+          <Table rows={[
+            ['Coupon', coupon.name, coupon.status],
+            ['Code', coupon.code, coupon.type],
+            ['Usage', coupon.usage, coupon.date],
+          ]} />
+          {title === 'Edit coupon' && (
+            <div className="form-grid">
+              <Label title="Coupon name" helper="Visual edit only" placeholder={coupon.name} />
+              <Label title="Coupon code" helper="Shown at checkout" placeholder={coupon.code} />
+            </div>
+          )}
+          {title === 'Duplicate coupon' && <p className="inline-status">سيتم إنشاء نسخة مسودة من الكوبون عند ربط الباك اند.</p>}
+        </div>
+        <footer><button onClick={onClose}>Cancel</button><button onClick={onClose}>{title === 'Edit coupon' ? 'Save coupon' : title === 'Duplicate coupon' ? 'Duplicate coupon' : 'Close preview'}</button></footer>
+      </dialog>
+    </section>
   )
 }
 
@@ -2601,6 +2694,8 @@ void InformationPagesPage
 
 function StoreChannelPage({ activePage = 'Store design' }: { activePage?: string }) {
   const [selectedTheme, setSelectedTheme] = useState(themes[0])
+  const [channelNotice, setChannelNotice] = useState('كل قنوات المتجر جاهزة كواجهات مرئية.')
+  const [actionDialog, setActionDialog] = useState<string | null>(null)
   const isDesign = activePage === 'Store design' || activePage === 'Manage themes'
   const isMarketplace = activePage === 'Theme Marketplace'
 
@@ -2609,6 +2704,7 @@ function StoreChannelPage({ activePage = 'Store design' }: { activePage?: string
       <div className="store-channel-workspace">
         <div className="marketing-breadcrumb"><span>Sales channels</span><span>›</span><b>Manage themes</b></div>
         <h1>Manage themes</h1>
+        <p className="action-result">{channelNotice}</p>
         <section className="store-design-hero">
           <div className="store-design-visual">
             <div className="theme-browser-shot">
@@ -2628,9 +2724,20 @@ function StoreChannelPage({ activePage = 'Store design' }: { activePage?: string
                 <span key={item}><ShieldCheck size={17} /> {item}</span>
               ))}
             </div>
-            <button>Start for free</button>
+            <button onClick={() => setActionDialog('Start design')}>Start for free</button>
           </div>
         </section>
+        <section className="store-flow-grid">
+          {['اختيار الثيم', 'تعديل الهوية', 'ترتيب الصفحة الرئيسية', 'معاينة الجوال'].map((item, index) => (
+            <button className={index === 0 ? 'active' : ''} key={item} onClick={() => setChannelNotice(`تم فتح خطوة ${item} كواجهة مرئية.`)}>
+              <b>{item}</b>
+              <small>{index === 0 ? selectedTheme : 'جاهز'}</small>
+            </button>
+          ))}
+        </section>
+        {actionDialog && (
+          <StoreChannelActionDialog title={actionDialog} activePage={activePage} selectedTheme={selectedTheme} onClose={() => { setChannelNotice(`تم تنفيذ ${actionDialog} كواجهة مرئية.`); setActionDialog(null) }} />
+        )}
       </div>
     )
   }
@@ -2640,16 +2747,20 @@ function StoreChannelPage({ activePage = 'Store design' }: { activePage?: string
       <div className="store-channel-workspace">
         <div className="marketing-breadcrumb"><span>Sales channels</span><span>›</span><b>Theme Marketplace</b></div>
         <h1>Theme Marketplace</h1>
+        <p className="action-result">{channelNotice}</p>
         <section className="theme-market-grid">
           {themes.map((theme, index) => (
             <article className={selectedTheme === theme ? 'active-card' : ''} key={theme}>
               <div className={`theme-art t${index + 1}`} />
               <h3>{theme}</h3>
               <p>{['Fashion', 'Electronics', 'Food & Grocery', 'Cosmetics', 'Digital products', 'Gifts'][index]}</p>
-              <button onClick={() => setSelectedTheme(theme)}>Preview theme</button>
+              <button onClick={() => { setSelectedTheme(theme); setActionDialog('Preview theme') }}>Preview theme</button>
             </article>
           ))}
         </section>
+        {actionDialog && (
+          <StoreChannelActionDialog title={actionDialog} activePage={activePage} selectedTheme={selectedTheme} onClose={() => { setChannelNotice(`تمت معاينة ثيم ${selectedTheme}.`); setActionDialog(null) }} />
+        )}
       </div>
     )
   }
@@ -2665,18 +2776,59 @@ function StoreChannelPage({ activePage = 'Store design' }: { activePage?: string
   return (
     <div className="store-channel-workspace">
       <div className="marketing-breadcrumb"><span>Sales channels</span><span>›</span><b>{activePage}</b></div>
+      <p className="action-result">{channelNotice}</p>
       <section className="store-admin-card">
         <div>
           <span>{activePage}</span>
           <h1>{activePage}</h1>
           <p>{activePage === 'Domain' ? 'Manage your store link, custom domain, SSL, and redirects.' : 'Manage this store channel screen with visual data until backend connection.'}</p>
         </div>
-        <button>{activePage === 'Domain' ? 'Connect domain' : 'Create new'}</button>
+        <button onClick={() => setActionDialog(activePage === 'Domain' ? 'Connect domain' : 'Create new')}>{activePage === 'Domain' ? 'Connect domain' : 'Create new'}</button>
       </section>
       <Panel title={`${activePage} overview`}>
         <Table rows={rows} />
       </Panel>
+      <section className="store-flow-grid">
+        {rows.map(([title, value, state]) => (
+          <button key={title} onClick={() => setChannelNotice(`تم فتح ${title} للمعاينة.`)}>
+            <b>{title}</b>
+            <small>{value} - {state}</small>
+          </button>
+        ))}
+      </section>
+      {actionDialog && (
+        <StoreChannelActionDialog title={actionDialog} activePage={activePage} selectedTheme={selectedTheme} onClose={() => { setChannelNotice(`تم تنفيذ ${actionDialog} في ${activePage} كواجهة مرئية.`); setActionDialog(null) }} />
+      )}
     </div>
+  )
+}
+
+function StoreChannelActionDialog({
+  title,
+  activePage,
+  selectedTheme,
+  onClose,
+}: {
+  title: string
+  activePage: string
+  selectedTheme: string
+  onClose: () => void
+}) {
+  return (
+    <section className="orders-dialog-backdrop">
+      <dialog className="orders-quick-dialog" open>
+        <header><h2>{title}</h2><button aria-label={`Close ${title}`} onClick={onClose}><X size={18} /></button></header>
+        <div className="quick-order-grid">
+          <Table rows={[
+            ['Channel', activePage, 'Ready'],
+            ['Theme', selectedTheme, 'Selected'],
+            ['Mode', title.includes('domain') || title.includes('Domain') ? 'Backend later' : 'Visual preview', 'Draft'],
+          ]} />
+          <p className="inline-status">هذه الخطوة مقفلة كواجهة، والربط الفعلي مؤجل للإنجن.</p>
+        </div>
+        <footer><button onClick={onClose}>Cancel</button><button onClick={onClose}>Apply</button></footer>
+      </dialog>
+    </section>
   )
 }
 
