@@ -1672,6 +1672,7 @@ function NewOrderPage() {
   const orderSteps = ['Customer', 'Products', 'Shipping', 'Payment', 'Review']
   const [activeStep, setActiveStep] = useState(orderSteps[0])
   const [orderNote, setOrderNote] = useState('No products added')
+  const [createState, setCreateState] = useState('Draft order is ready')
 
   return (
     <PageShell crumb="Orders" title="New order" aside={<FilterList title="Order flow" items={orderSteps} activeItem={activeStep} onItemClick={setActiveStep} />}>
@@ -1697,7 +1698,8 @@ function NewOrderPage() {
         <aside className="form-side">
           <Panel title="Order summary">
             <Table rows={[['Subtotal', '0.000 BHD'], ['Shipping', '0.000 BHD'], ['Total', '0.000 BHD']]} />
-            <button className="save">Create order</button>
+            <button className="save" onClick={() => setCreateState('تم إنشاء الطلب بصرياً وإضافته لمسار المراجعة.')}>Create order</button>
+            <p className="inline-status">{createState}</p>
           </Panel>
         </aside>
       </section>
@@ -1771,7 +1773,9 @@ function Orders() {
   const [statusesOpen, setStatusesOpen] = useState(false)
   const [listCollapsed, setListCollapsed] = useState(false)
   const [activeFilter, setActiveFilter] = useState('Saved filters')
-  const merchantOrders: typeof sampleOrders = []
+  const [actionDialog, setActionDialog] = useState<string | null>(null)
+  const [actionNotice, setActionNotice] = useState('كل إجراءات الطلبات جاهزة كواجهات مرئية.')
+  const merchantOrders: typeof sampleOrders = sampleOrders
   const visibleOrders = merchantOrders.filter((order) => {
     const matchesStatus = activeStatus === orderStatuses[0] || order.status === activeStatus
     const text = `${order.id} ${order.customer} ${order.channel}`.toLowerCase()
@@ -1802,6 +1806,7 @@ function Orders() {
         </label>
         <button className={filterOpen ? 'active' : ''} onClick={() => setFilterOpen(true)}><Filter size={18} /> Filter</button>
       </section>
+      <p className="action-result">{actionNotice}</p>
 
       <section className={listCollapsed ? 'orders-board collapsed' : 'orders-board'}>
         <aside className="orders-status-list">
@@ -1852,7 +1857,11 @@ function Orders() {
                 ['Payment', selectedOrder.status === 'بإنتظار الدفع' ? 'Pending' : 'Paid', 'Visual only'],
                 ['Timeline', selectedOrder.time, 'Ready'],
               ]} />
-              <div className="detail-actions"><button>Print invoice</button><button>Change status</button><button>Message customer</button></div>
+              <div className="detail-actions">
+                <button onClick={() => setActionDialog('Print invoice')}>Print invoice</button>
+                <button onClick={() => setActionDialog('Change status')}>Change status</button>
+                <button onClick={() => setActionDialog('Message customer')}>Message customer</button>
+              </div>
             </>
           ) : (
             <Empty title="No orders selected" body="Select an order from the list to preview customer, payment, and timeline details here." />
@@ -1862,13 +1871,23 @@ function Orders() {
 
       <div className="orders-inline-actions">
         <button onClick={() => setStatusesOpen(true)}><SlidersHorizontal size={17} /> Customize statuses</button>
-        <button aria-label="Refresh orders" onClick={() => { setSelectedOrder(null); setSearchTerm('') }}><RefreshCcw size={17} /></button>
+        <button aria-label="Refresh orders" onClick={() => { setSelectedOrder(null); setSearchTerm(''); setActionNotice('تم تحديث قائمة الطلبات وإعادة تعيين البحث.') }}><RefreshCcw size={17} /></button>
       </div>
 
       {filterOpen && (
         <OrdersFilterDialog activeFilter={activeFilter} setActiveFilter={setActiveFilter} onClose={() => setFilterOpen(false)} />
       )}
       {statusesOpen && <OrdersQuickDialog title="Customize statuses" onClose={() => setStatusesOpen(false)} />}
+      {actionDialog && selectedOrder && (
+        <OrdersQuickDialog
+          title={actionDialog}
+          order={selectedOrder}
+          onClose={() => {
+            setActionNotice(`تم تنفيذ إجراء ${actionDialog} على الطلب ${selectedOrder.id} كواجهة مرئية.`)
+            setActionDialog(null)
+          }}
+        />
+      )}
     </div>
   )
 
@@ -1918,8 +1937,18 @@ function OrdersFilterDialog({
   )
 }
 
-function OrdersQuickDialog({ title, onClose }: { title: string; onClose: () => void }) {
+function OrdersQuickDialog({
+  title,
+  order,
+  onClose,
+}: {
+  title: string
+  order?: (typeof sampleOrders)[number]
+  onClose: () => void
+}) {
   const isStatus = title === 'Customize statuses'
+  const isInvoice = title === 'Print invoice'
+  const isMessage = title === 'Message customer'
   return (
     <section className="orders-dialog-backdrop">
       <dialog className="orders-quick-dialog" open>
@@ -1930,6 +1959,29 @@ function OrdersQuickDialog({ title, onClose }: { title: string; onClose: () => v
               <label key={status}><i style={{ background: orderStatusColor(index + 1) }} /> <span>{status}</span><input type="checkbox" defaultChecked /></label>
             ))}
           </div>
+        ) : isInvoice && order ? (
+          <div className="quick-order-grid">
+            <Table rows={[
+              ['Order', order.id, order.status],
+              ['Customer', order.customer, order.channel],
+              ['Total', order.total, 'Ready to print'],
+            ]} />
+          </div>
+        ) : isMessage && order ? (
+          <div className="quick-order-grid">
+            <Label title="Message title" helper={order.customer} placeholder="Order update" />
+            <label className="field wide">
+              <span>Message content <em>Optional</em></span>
+              <small>Visual customer message preview.</small>
+              <textarea defaultValue={`مرحباً ${order.customer}، تم تحديث طلبك ${order.id}.`} />
+            </label>
+          </div>
+        ) : title === 'Change status' && order ? (
+          <div className="status-editor-list">
+            {orderStatuses.slice(2, 8).map((status, index) => (
+              <label key={status}><i style={{ background: orderStatusColor(index + 2) }} /> <span>{status}</span><input name="status-preview" type="radio" defaultChecked={status === order.status} /></label>
+            ))}
+          </div>
         ) : (
           <div className="quick-order-grid">
             <Label title="Customer" helper="Search or add customer" placeholder="Customer name or phone" />
@@ -1937,7 +1989,7 @@ function OrdersQuickDialog({ title, onClose }: { title: string; onClose: () => v
             <Label title="Payment" helper="Visual setup only" placeholder="Payment method" />
           </div>
         )}
-        <footer><button onClick={onClose}>Cancel</button><button onClick={onClose}>{isStatus ? 'Save statuses' : 'Create order'}</button></footer>
+        <footer><button onClick={onClose}>Cancel</button><button onClick={onClose}>{isStatus ? 'Save statuses' : title === 'Change status' ? 'Save status' : isInvoice ? 'Print invoice' : isMessage ? 'Send message' : 'Create order'}</button></footer>
       </dialog>
     </section>
   )
@@ -1999,10 +2051,20 @@ function Products() {
   const [filterOpen, setFilterOpen] = useState(false)
   const [listCollapsed, setListCollapsed] = useState(false)
   const [activeFilterSection, setActiveFilterSection] = useState('Product Status')
-  const merchantProducts: typeof sampleProducts = []
+  const [actionDialog, setActionDialog] = useState<string | null>(null)
+  const [actionNotice, setActionNotice] = useState('كل إجراءات المنتجات جاهزة كواجهات مرئية.')
+  const merchantProducts: typeof sampleProducts = sampleProducts
   const visibleProducts = merchantProducts.filter((product) => {
     const text = `${product.name} ${product.sku}`.toLowerCase()
-    return text.includes(searchTerm.toLowerCase())
+    const filterMap: Record<string, (item: typeof sampleProducts[number]) => boolean> = {
+      'For Sale Products': (item) => item.status === 'For sale',
+      'Discounted Products': (item) => item.status === 'Discounted',
+      'Hidden Products': (item) => item.status === 'Hidden',
+      'Nearly Out of Stock': (item) => item.status === 'Nearly out',
+      'Out of Stock Products': () => false,
+    }
+    const matchesFilter = !activeFilter || !filterMap[activeFilter] || filterMap[activeFilter](product)
+    return matchesFilter && text.includes(searchTerm.toLowerCase())
   })
   const setProductFilter = (item: string) => {
     setActiveFilter(item)
@@ -2034,6 +2096,7 @@ function Products() {
         </label>
         <button className={filterOpen ? 'active' : ''} onClick={() => setFilterOpen(true)}><Filter size={18} /> Filter</button>
       </section>
+      <p className="action-result">{actionNotice}</p>
 
       {activeFilter && productFilterStatus[activeFilter] && (
         <section className="product-filter-chip-row">
@@ -2085,7 +2148,11 @@ function Products() {
                 ['Status', selectedProduct.status, activeFilter],
                 ['SEO', 'Ready preview', 'Draft'],
               ]} />
-              <div className="detail-actions"><button>Edit product</button><button>Duplicate</button><button>Hide in store</button></div>
+              <div className="detail-actions">
+                <button onClick={() => setActionDialog('Edit product')}>Edit product</button>
+                <button onClick={() => setActionDialog('Duplicate')}>Duplicate</button>
+                <button onClick={() => setActionDialog('Hide in store')}>Hide in store</button>
+              </div>
             </>
           ) : (
             <Empty title="No products selected" body="Select a product from the list to preview price, inventory, and storefront status here." />
@@ -2096,7 +2163,52 @@ function Products() {
       {filterOpen && (
         <ProductsFilterDialog activeFilter={activeFilter} activeSection={activeFilterSection} setActiveFilter={setProductFilter} setActiveSection={setActiveFilterSection} onClose={() => setFilterOpen(false)} />
       )}
+      {actionDialog && selectedProduct && (
+        <ProductActionDialog
+          title={actionDialog}
+          product={selectedProduct}
+          onClose={() => {
+            setActionNotice(`تم تنفيذ إجراء ${actionDialog} على المنتج ${selectedProduct.name} كواجهة مرئية.`)
+            setActionDialog(null)
+          }}
+        />
+      )}
     </div>
+  )
+}
+
+function ProductActionDialog({
+  title,
+  product,
+  onClose,
+}: {
+  title: string
+  product: (typeof sampleProducts)[number]
+  onClose: () => void
+}) {
+  return (
+    <section className="orders-dialog-backdrop">
+      <dialog className="orders-quick-dialog" open>
+        <header><h2>{title}</h2><button aria-label={`Close ${title}`} onClick={onClose}><X size={18} /></button></header>
+        <div className="quick-order-grid">
+          <Table rows={[
+            ['Product', product.name, product.status],
+            ['SKU', product.sku, 'Editable'],
+            ['Price', product.price, 'Preview'],
+            ['Inventory', product.stock, 'Tracked'],
+          ]} />
+          {title === 'Edit product' && (
+            <div className="form-grid">
+              <Label title="Product name" helper="Visual edit only" placeholder={product.name} />
+              <Label title="Price" helper="Current product price" placeholder={product.price} />
+            </div>
+          )}
+          {title === 'Duplicate' && <p className="inline-status">سيتم إنشاء نسخة مسودة بنفس السعر والمخزون عند ربط الباك اند.</p>}
+          {title === 'Hide in store' && <p className="inline-status">هذا الإجراء يعرض حالة إخفاء المنتج من واجهة المتجر فقط الآن.</p>}
+        </div>
+        <footer><button onClick={onClose}>Cancel</button><button onClick={onClose}>{title === 'Edit product' ? 'Save product' : title === 'Duplicate' ? 'Duplicate product' : 'Hide product'}</button></footer>
+      </dialog>
+    </section>
   )
 }
 

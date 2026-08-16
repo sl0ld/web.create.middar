@@ -2336,6 +2336,16 @@ button {
   gap: 16px;
 }
 
+.action-result {
+  margin: 0;
+  border: 1px solid #2cf0bd38;
+  border-radius: 8px;
+  padding: 11px 14px;
+  color: var(--mint);
+  background: #2cf0bd10;
+  font-weight: 850;
+}
+
 .orders-commandbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
