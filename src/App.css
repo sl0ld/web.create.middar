@@ -359,6 +359,12 @@ button {
   background: #004956;
 }
 
+.public-sector-note {
+  margin: 12px 0 0;
+  color: #526865;
+  line-height: 1.7;
+}
+
 .public-builder {
   display: grid;
   grid-template-columns: minmax(0, 0.85fr) minmax(360px, 1.15fr);
@@ -1458,6 +1464,17 @@ button {
   gap: 10px;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--line);
+}
+
+.popover-status {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  color: var(--muted);
+  background: #ffffff0a;
+  line-height: 1.6;
+  font-size: 13px;
 }
 
 .profile-summary span {

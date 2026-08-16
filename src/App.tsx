@@ -451,12 +451,23 @@ function App() {
           </>
         )}
       </section>
-      <button className="chat-fab" aria-label="الدعم الفني"><MessageCircle size={24} /></button>
+      <button
+        className="chat-fab"
+        aria-label="الدعم الفني"
+        onClick={() => {
+          setScreen('support')
+          setActivePageKey('Support:Chat')
+        }}
+      >
+        <MessageCircle size={24} />
+      </button>
     </main>
   )
 }
 
 function PublicHome({ setScreen }: { setScreen: (screen: Screen) => void }) {
+  const [selectedSector, setSelectedSector] = useState('الأزياء')
+  const [publicNotice, setPublicNotice] = useState('اختر قطاعك وشاهد كيف تتغير نقطة البداية قبل التسجيل.')
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
@@ -540,9 +551,21 @@ function PublicHome({ setScreen }: { setScreen: (screen: Screen) => void }) {
         <div>
           <span>القطاعات</span>
           <h2>ابدأ مهما كان نوع تجارتك</h2>
+          <p className="public-sector-note">{publicNotice}</p>
         </div>
         <div>
-          {sectors.map((sector, index) => <button className={index === 0 ? 'active' : ''} key={sector}>{sector}</button>)}
+          {sectors.map((sector) => (
+            <button
+              className={selectedSector === sector ? 'active' : ''}
+              key={sector}
+              onClick={() => {
+                setSelectedSector(sector)
+                setPublicNotice(`تم اختيار ${sector}. هذا الاختيار سيظهر لاحقاً في أسئلة تجهيز المتجر.`)
+              }}
+            >
+              {sector}
+            </button>
+          ))}
         </div>
       </section>
 
@@ -1043,6 +1066,8 @@ function HeaderToolPanel({
   setActivePageKey: (key: string | null) => void
   closeTools: () => void
 }) {
+  const [profileNotice, setProfileNotice] = useState('إجراءات الحساب جاهزة كواجهات مرئية.')
+  const [profileDialog, setProfileDialog] = useState<string | null>(null)
   const go = (screen: DashboardScreen, pageKey?: string) => {
     setScreen(screen)
     setActivePageKey(pageKey ?? null)
@@ -1076,10 +1101,19 @@ function HeaderToolPanel({
     return (
       <section className="tool-popover profile-popover">
         <div className="profile-summary"><span>Ø³</span><div><b>Ø³Ø¹ÙŠØ¯</b><small>Basic plan</small></div></div>
+        <p className="popover-status">{profileNotice}</p>
         <button onClick={() => go('settings', 'Settings:Balance & billing')}>Store plan & subscriptions</button>
-        <button>Invite & earn</button>
-        <button>Give feedback</button>
+        <button onClick={() => setProfileDialog('Invite & earn')}>Invite & earn</button>
+        <button onClick={() => setProfileDialog('Give feedback')}>Give feedback</button>
         <button onClick={() => go('settings', 'Settings:Notifications')}>Notification preferences</button>
+        {profileDialog && (
+          <PeopleActionDialog
+            title={profileDialog}
+            subject="سعيد"
+            rows={[['Account', 'سعيد', 'Basic'], ['Action', profileDialog, 'Visual'], ['Destination', profileDialog.includes('Invite') ? 'Referral preview' : 'Feedback form', 'Ready']]}
+            onClose={() => { setProfileNotice(`تم تنفيذ ${profileDialog} كواجهة مرئية.`); setProfileDialog(null) }}
+          />
+        )}
       </section>
     )
   }
@@ -1572,6 +1606,7 @@ function DynamicPage({
 
 function PagePreview({ title, group, link }: { title: string; group: string; link: string }) {
   const [notice, setNotice] = useState('Ready screen')
+  const [dialog, setDialog] = useState<string | null>(null)
   const rows = [
     [title, group, notice],
     ['Filters', 'Visual only', 'No backend yet'],
@@ -1585,13 +1620,13 @@ function PagePreview({ title, group, link }: { title: string; group: string; lin
         <h1>{title}</h1>
         <p>This screen is now connected from the All menu with its own title, breadcrumb, side navigation, and مدار workspace state.</p>
         <div>
-          <button onClick={() => setNotice('Primary action selected')}>Primary action</button>
-          <button onClick={() => setNotice('Guide panel opened')}>Learn more</button>
+          <button onClick={() => setDialog('Primary action')}>Primary action</button>
+          <button onClick={() => setDialog('Guide panel')}>Learn more</button>
         </div>
       </section>
       <div className="split-empty">
         <section>
-          <button className="filter"><Filter size={17} /> Filter</button>
+          <button className="filter" onClick={() => setDialog('Filter') }><Filter size={17} /> Filter</button>
           <div className="empty-lines"><i /><i /><i /><i /></div>
         </section>
         <section><Empty title={`No ${title.toLowerCase()} selected`} body="The visual structure is ready. Functional data can be connected later." /></section>
@@ -1599,11 +1634,21 @@ function PagePreview({ title, group, link }: { title: string; group: string; lin
       <Panel title={`${title} preview`}>
         <Table rows={rows} />
       </Panel>
+      {dialog && (
+        <PeopleActionDialog
+          title={dialog}
+          subject={title}
+          rows={[['Screen', title, group], ['Action', dialog, 'Ready'], ['Route', link, 'Connected']]}
+          onClose={() => { setNotice(`تم تنفيذ ${dialog} داخل ${title}.`); setDialog(null) }}
+        />
+      )}
     </div>
   )
 }
 
 function UnavailablePanel() {
+  const [notice, setNotice] = useState('الميزة مقفلة في هذه الباقة، لكن شاشة القرار جاهزة.')
+  const [dialog, setDialog] = useState<string | null>(null)
   return (
     <section className="unavailable-panel">
       <div>
@@ -1611,11 +1656,20 @@ function UnavailablePanel() {
         <span>Upgrade required</span>
         <h2>This feature isn't available on your plan</h2>
         <p>Try the "Pro" or "Special" plan free to unlock this feature and more for your store.</p>
+        <p className="inline-status">{notice}</p>
       </div>
       <div className="locked-actions">
-        <button>Learn more</button>
-        <button>Start free trial</button>
+        <button onClick={() => setDialog('Plan comparison')}>Learn more</button>
+        <button onClick={() => setDialog('Start free trial')}>Start free trial</button>
       </div>
+      {dialog && (
+        <PeopleActionDialog
+          title={dialog}
+          subject="Upgrade required"
+          rows={[['Current plan', 'Basic', 'Active'], ['Target', dialog, 'Preview'], ['Billing', 'Deferred', 'Backend later']]}
+          onClose={() => { setNotice(`تم فتح ${dialog} كواجهة ترقية مرئية.`); setDialog(null) }}
+        />
+      )}
     </section>
   )
 }
@@ -2671,16 +2725,18 @@ function ThemeEditorPage() {
 
 function DomainPage() {
   const [domainState, setDomainState] = useState('default')
+  const [notice, setNotice] = useState('الدومين الافتراضي جاهز، وربط الدومين الحقيقي مؤجل.')
 
   return (
     <PageShell crumb="Online Store" title="Domain" aside={<FilterList title="Domain setup" items={['Default domain', 'Custom domain', 'DNS records', 'Redirects', 'SSL']} activeItem={domainState === 'default' ? 'Default domain' : 'Custom domain'} onItemClick={(item) => setDomainState(item === 'Default domain' ? 'default' : 'custom')} />}>
       <section className="form-workspace">
         <div className="form-main">
           <FeatureHero title="Domain" badge="Available on your plan" body="Prepare the store URL, custom domain, SSL, and redirects before real DNS connection." action="Connect domain" />
+          <p className="action-result">{notice}</p>
           <Panel title="Default store link">
             <div className="domain-card">
               <span>https://saeed-store.middar.shop</span>
-              <button onClick={() => setDomainState('default')}>Copy link</button>
+              <button onClick={() => { setDomainState('default'); setNotice('تم نسخ رابط المتجر الافتراضي كحالة واجهة.') }}>Copy link</button>
             </div>
           </Panel>
           <Panel title="Custom domain">
@@ -2702,10 +2758,13 @@ function DomainPage() {
 
 function InformationPagesPage({ activeView }: { activeView: string }) {
   const [selectedPage, setSelectedPage] = useState('About us')
+  const [notice, setNotice] = useState('محرر الصفحات جاهز للحفظ والمعاينة والنشر كواجهات.')
+  const [dialog, setDialog] = useState<string | null>(null)
   const pages = ['About us', 'Privacy policy', 'Return policy', 'Shipping policy', 'Contact us']
 
   return (
     <PageShell crumb="Online Store" title={activeView} aside={<FilterList title="Pages" items={pages} activeItem={selectedPage} onItemClick={setSelectedPage} />}>
+      <p className="action-result">{notice}</p>
       <div className="records-layout">
         <section className="record-list">
           {pages.map((pageName, index) => (
@@ -2730,9 +2789,21 @@ function InformationPagesPage({ activeView }: { activeView: string }) {
             <small>Draft content only, backend later.</small>
             <textarea defaultValue="Write page content here..." />
           </label>
-          <div className="detail-actions"><button>Save draft</button><button>Preview page</button><button>Publish</button></div>
+          <div className="detail-actions">
+            <button onClick={() => setNotice(`تم حفظ ${selectedPage} كمسودة مرئية.`)}>Save draft</button>
+            <button onClick={() => setDialog('Preview page')}>Preview page</button>
+            <button onClick={() => setDialog('Publish')}>Publish</button>
+          </div>
         </aside>
       </div>
+      {dialog && (
+        <PeopleActionDialog
+          title={dialog}
+          subject={selectedPage}
+          rows={[['Page', selectedPage, 'Selected'], ['Visibility', dialog === 'Publish' ? 'Visible' : 'Preview', 'Ready'], ['Backend', 'Deferred', 'Frontend']]}
+          onClose={() => { setNotice(`تم تنفيذ ${dialog} لصفحة ${selectedPage}.`); setDialog(null) }}
+        />
+      )}
     </PageShell>
   )
 }
@@ -3385,24 +3456,35 @@ function Shipping() {
 
 function Payments() {
   const [activeMethod, setActiveMethod] = useState(paymentMethods[0][0])
+  const [notice, setNotice] = useState('بوابة الدفع جاهزة كواجهة، والتفعيل الحقيقي مؤجل.')
+  const [dialog, setDialog] = useState<string | null>(null)
   return (
     <div className="page-stack">
+      <p className="action-result">{notice}</p>
       <LockedFeature title="مدفوعات مدار" body="Make checkout easier for your customers. Enable online payments and let customers pay securely through your store." />
       <section className="verify-card">
         <ShieldCheck size={34} />
         <div><h2>Your store isn't verified</h2><p>Verify your store to activate and manage online payments securely.</p></div>
-        <button>Verify now</button>
+        <button onClick={() => setDialog('Verify store')}>Verify now</button>
       </section>
       <section className="payment-grid">
         {paymentMethods.map(([method, state, action]) => (
           <article className={activeMethod === method ? 'active-card' : ''} key={method}>
-            <WalletCards /><b>{method}</b><p>{state}</p><button onClick={() => setActiveMethod(method)}>{action}</button>
+            <WalletCards /><b>{method}</b><p>{state}</p><button onClick={() => { setActiveMethod(method); setNotice(`تم فتح ${method} للمعاينة.`) }}>{action}</button>
           </article>
         ))}
       </section>
       <Panel title={`${activeMethod} details`}>
         <Table rows={[['Availability', activeMethod.includes('مدار') ? 'After verification' : 'Preview ready'], ['Settlement', '2-5 business days'], ['Checkout display', 'Visible after activation']]} />
       </Panel>
+      {dialog && (
+        <PeopleActionDialog
+          title={dialog}
+          subject="Payments"
+          rows={[['Store', 'مدار', 'Basic'], ['Verification', 'Pending', 'Visual'], ['Next step', 'Documents later', 'Backend deferred']]}
+          onClose={() => { setNotice('تم فتح مسار التوثيق كواجهة مرئية.'); setDialog(null) }}
+        />
+      )}
     </div>
   )
 }
@@ -3723,6 +3805,8 @@ function FilterList({
 }
 
 function LockedFeature({ title, body, badge = 'Available on Plus, Pro, and Special', description }: { title: string; body: string; badge?: string; description?: string }) {
+  const [notice, setNotice] = useState('هذه البطاقة جاهزة لاتخاذ قرار بصري قبل الربط الفعلي.')
+  const [dialog, setDialog] = useState<string | null>(null)
   return (
     <section className="locked-card">
       <div>
@@ -3730,29 +3814,50 @@ function LockedFeature({ title, body, badge = 'Available on Plus, Pro, and Speci
         <small>{badge}</small>
         <h2>{body}</h2>
         {description && <p>{description}</p>}
+        <p className="inline-status">{notice}</p>
       </div>
       <div className="locked-actions">
-        <button>Learn more</button>
-        <button>Start your free trial</button>
+        <button onClick={() => setDialog('Learn more')}>Learn more</button>
+        <button onClick={() => setDialog('Start your free trial')}>Start your free trial</button>
       </div>
+      {dialog && (
+        <PeopleActionDialog
+          title={dialog}
+          subject={title}
+          rows={[['Feature', title, 'Selected'], ['Plan', badge, 'Preview'], ['Action', dialog, 'Frontend']]}
+          onClose={() => { setNotice(`تم تنفيذ ${dialog} لميزة ${title}.`); setDialog(null) }}
+        />
+      )}
     </section>
   )
 }
 
 function FeatureHero({ title, badge, body, action }: { title: string; badge: string; body: string; action: string }) {
+  const [notice, setNotice] = useState('جاهز للإجراء المرئي.')
+  const [dialog, setDialog] = useState<string | null>(null)
   return (
     <section className="feature-hero">
       <div>
         <span>{title} <small>{badge}</small></span>
         <h1>Stand out with your design</h1>
         <p>{body}</p>
+        <p className="inline-status">{notice}</p>
       </div>
-      <button>{action}</button>
+      <button onClick={() => setDialog(action)}>{action}</button>
+      {dialog && (
+        <PeopleActionDialog
+          title={dialog}
+          subject={title}
+          rows={[['Area', title, badge], ['Action', dialog, 'Ready'], ['State', 'Visual only', 'Frontend']]}
+          onClose={() => { setNotice(`تم تنفيذ ${dialog} داخل ${title}.`); setDialog(null) }}
+        />
+      )}
     </section>
   )
 }
 
 function SplitEmpty({ title, action, context = 'All' }: { title: string; action: string; context?: string }) {
+  const [notice, setNotice] = useState('لا توجد عناصر، لكن الفلتر جاهز كواجهة.')
   return (
     <div className="split-empty">
       <section>
@@ -3761,9 +3866,10 @@ function SplitEmpty({ title, action, context = 'All' }: { title: string; action:
           <div className="filter-panel">
             <b>Active view</b>
             <span>{context}</span>
-            <button>Apply</button>
+            <button onClick={() => setNotice(`تم تطبيق ${action} على ${context}.`)}>Apply</button>
           </div>
         </details>
+        <p className="inline-status">{notice}</p>
         <div className="empty-lines"><i /><i /><i /><i /></div>
       </section>
       <section><Empty title={title} body="Select an item from the list to see details here." /></section>
