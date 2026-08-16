@@ -149,6 +149,22 @@ const sampleCoupons = [
   { name: 'شحن مجاني', code: 'SHIPFREE', type: 'Free shipping', status: 'Scheduled', usage: '0 / 50', date: 'يبدأ غداً' },
   { name: 'عملاء VIP', code: 'VIP15', type: 'Fixed discount', status: 'Inactive', usage: '12 / 80', date: 'متوقف مؤقتاً' },
 ]
+const sampleCustomers = [
+  { name: 'سارة علي', phone: '+973 3333 1007', email: 'sara@example.com', group: 'VIP customers', orders: '7', spent: '186.250 BHD', status: 'Active' },
+  { name: 'محمد حسن', phone: '+973 3333 1006', email: 'mohammed@example.com', group: 'New customers', orders: '2', spent: '35.500 BHD', status: 'Active' },
+  { name: 'فاطمة جاسم', phone: '+973 3333 1005', email: 'fatima@example.com', group: 'All customers', orders: '4', spent: '92.000 BHD', status: 'Needs review' },
+]
+const sampleStaff = [
+  { name: 'سعيد', role: 'Store Owner', email: 'mr.fks.r0@gmail.com', access: 'Full access', status: 'Active' },
+  { name: 'نورة الدعم', role: 'Support agent', email: 'support@middar.test', access: 'Orders + Support', status: 'Invited' },
+  { name: 'مدير المنتجات', role: 'Catalog manager', email: 'products@middar.test', access: 'Products + Inventory', status: 'Active' },
+]
+const sampleSupport = [
+  { title: 'تقييم جديد على عطر مدار', customer: 'سارة علي', type: 'Reviews', status: 'Published', time: 'قبل 12 دقيقة' },
+  { title: 'سؤال عن مقاس العباية', customer: 'محمد حسن', type: 'Questions', status: 'Waiting reply', time: 'اليوم 10:20 ص' },
+  { title: 'بلاغ على تقييم غير مناسب', customer: 'فاطمة جاسم', type: 'Reported reviews', status: 'Needs review', time: 'أمس' },
+  { title: 'محادثة دعم مفتوحة', customer: 'Khalid Store', type: 'Tickets', status: 'Open', time: '05 Aug' },
+]
 const setupTasks = [
   ['Add a support number', 'Add', 'Required before launch'],
   ['Set up your domain', 'Set up', 'Default domain is active'],
@@ -1508,10 +1524,22 @@ function DynamicPage({
     return <StoreChannelPage activePage={pageTitle} />
   }
 
+  if (route === 'customers') {
+    return <Customers activePage={pageTitle} />
+  }
+
+  if (route === 'staff') {
+    return <Staff activePage={pageTitle} />
+  }
+
   if (route === 'reports') {
     void groupLinks
     void openSidePage
     return <Reports activePage={pageTitle} />
+  }
+
+  if (route === 'support') {
+    return <Support activePage={pageTitle} />
   }
 
   return (
@@ -2856,26 +2884,168 @@ function StoreDesign() {
 
 void StoreDesign
 
-function Customers() {
+function Customers({ activePage = 'All customers' }: { activePage?: string }) {
   const customerGroups = ['All customers', 'Empty groups', 'VIP customers', 'New customers']
-  const [activeCustomerGroup, setActiveCustomerGroup] = useState(customerGroups[0])
+  const [activeCustomerGroup, setActiveCustomerGroup] = useState(activePage === 'Customer groups' ? 'VIP customers' : customerGroups[0])
+  const [selectedCustomer, setSelectedCustomer] = useState(sampleCustomers[0])
+  const [actionDialog, setActionDialog] = useState<string | null>(null)
+  const [notice, setNotice] = useState('كل أدوات العملاء جاهزة كواجهات مرئية.')
+  const filteredCustomers = sampleCustomers.filter((customer) => activeCustomerGroup === 'All customers' || customer.group === activeCustomerGroup)
+
+  if (activePage !== 'All customers' && activePage !== 'Customer groups') {
+    return (
+      <PageShell crumb="Customers" title={activePage} aside={<FilterList title="Customers" items={['All customers', 'Customer groups', 'Import customers', 'Custom fields', 'Settings']} activeItem={activePage} />}>
+        <p className="action-result">{notice}</p>
+        <section className="settings-grid">
+          {['Import customers', 'Custom fields', 'Settings'].map((title) => (
+            <article className={activePage === title ? 'active-card' : ''} key={title}>
+              <Users size={22} />
+              <h3>{title}</h3>
+              <p>{title === 'Import customers' ? 'واجهة استيراد CSV ومطابقة الأعمدة.' : title === 'Custom fields' ? 'حقول تسجيل وبيانات إضافية للعملاء.' : 'إعدادات التسجيل والمجموعات والتسويق.'}</p>
+              <button onClick={() => setNotice(`تم فتح ${title} كواجهة مرئية.`)}>Open</button>
+            </article>
+          ))}
+        </section>
+        <Panel title={`${activePage} preview`}>
+          <Table rows={[['الحالة', activePage, 'جاهز'], ['السجلات', '3 عناصر تجريبية', 'واجهة فقط'], ['الربط', 'لاحقاً مع الباك اند', 'مؤجل']]} />
+        </Panel>
+      </PageShell>
+    )
+  }
 
   return (
     <PageShell crumb="Customers" title="All customers" aside={<FilterList title="Customer groups" items={customerGroups} activeItem={activeCustomerGroup} onItemClick={setActiveCustomerGroup} />}>
-      <LockedFeature title="Add New Customer" body="Effective communication with your customers" />
-      <SplitEmpty title={`No ${activeCustomerGroup.toLowerCase()} selected`} action="Filter" context={activeCustomerGroup} />
+      <p className="action-result">{notice}</p>
+      <div className="records-layout">
+        <section className="record-list">
+          {filteredCustomers.length ? filteredCustomers.map((customer) => (
+            <button className={selectedCustomer.email === customer.email ? 'active' : ''} key={customer.email} onClick={() => setSelectedCustomer(customer)}>
+              <span><b>{customer.name}</b><small>{customer.phone}</small></span>
+              <span>{customer.group}<small>{customer.email}</small></span>
+              <strong>{customer.spent}</strong>
+              <em>{customer.status}</em>
+            </button>
+          )) : <Empty title="No results found" body="Try another customer group." />}
+        </section>
+        <aside className="record-detail">
+          <div className="detail-head">
+            <div><span>Customer details</span><h2>{selectedCustomer.name}</h2></div>
+            <em>{selectedCustomer.status}</em>
+          </div>
+          <Table rows={[
+            ['Phone', selectedCustomer.phone, selectedCustomer.group],
+            ['Email', selectedCustomer.email, 'Verified preview'],
+            ['Orders', selectedCustomer.orders, selectedCustomer.spent],
+            ['Wallet', '0.000 BHD', 'Ready'],
+          ]} />
+          <div className="detail-actions">
+            <button onClick={() => setActionDialog('Add note')}>Add note</button>
+            <button onClick={() => setActionDialog('Message customer')}>Message customer</button>
+            <button onClick={() => setActionDialog('Assign group')}>Assign group</button>
+          </div>
+        </aside>
+      </div>
+      {actionDialog && (
+        <PeopleActionDialog
+          title={actionDialog}
+          subject={selectedCustomer.name}
+          rows={[['Customer', selectedCustomer.name, selectedCustomer.status], ['Group', selectedCustomer.group, selectedCustomer.email], ['Orders', selectedCustomer.orders, selectedCustomer.spent]]}
+          onClose={() => { setNotice(`تم تنفيذ ${actionDialog} للعميل ${selectedCustomer.name} كواجهة مرئية.`); setActionDialog(null) }}
+        />
+      )}
     </PageShell>
   )
 }
 
-function Staff() {
+function Staff({ activePage = 'Staff' }: { activePage?: string }) {
+  const [selectedStaff, setSelectedStaff] = useState(sampleStaff[0])
+  const [actionDialog, setActionDialog] = useState<string | null>(null)
+  const [notice, setNotice] = useState('كل أدوات الموظفين والصلاحيات جاهزة كواجهات مرئية.')
+  const cards = [
+    ['Staff', 'قائمة الفريق والدعوات وحالة الوصول.'],
+    ['Roles & permissions', 'أدوار جاهزة وصلاحيات مفصلة لكل قسم.'],
+    ['Employees targets', 'أهداف مبيعات ومهام متابعة للموظفين.'],
+  ]
+
   return (
     <div className="page-stack">
-      <LockedFeature title="Staff Accounts" body="Add your team and manage roles, permissions, and employee targets." />
-      <Panel title="Staff">
-        <Table rows={[['Store Owner', 'mr.fks.r0@gmail.com', 'Joined today', 'Active']]} />
-      </Panel>
+      <p className="action-result">{notice}</p>
+      <section className="settings-grid">
+        {cards.map(([title, body]) => (
+          <article className={activePage === title ? 'active-card' : ''} key={title}>
+            <UserRound size={22} />
+            <h3>{title}</h3>
+            <p>{body}</p>
+            <button onClick={() => setNotice(`تم فتح ${title} كواجهة مرئية.`)}>Open</button>
+          </article>
+        ))}
+      </section>
+      <div className="records-layout">
+        <section className="record-list">
+          {sampleStaff.map((staff) => (
+            <button className={selectedStaff.email === staff.email ? 'active' : ''} key={staff.email} onClick={() => setSelectedStaff(staff)}>
+              <span><b>{staff.name}</b><small>{staff.email}</small></span>
+              <span>{staff.role}<small>{staff.access}</small></span>
+              <em>{staff.status}</em>
+            </button>
+          ))}
+        </section>
+        <aside className="record-detail">
+          <div className="detail-head">
+            <div><span>Staff details</span><h2>{selectedStaff.name}</h2></div>
+            <em>{selectedStaff.status}</em>
+          </div>
+          <Table rows={[
+            ['Role', selectedStaff.role, selectedStaff.access],
+            ['Email', selectedStaff.email, selectedStaff.status],
+            ['Permissions', activePage === 'Roles & permissions' ? 'Editable matrix' : 'Preview ready', 'Visual'],
+            ['Targets', activePage === 'Employees targets' ? 'Monthly target ready' : 'Not assigned', 'Draft'],
+          ]} />
+          <div className="detail-actions">
+            <button onClick={() => setActionDialog('Invite staff')}>Invite staff</button>
+            <button onClick={() => setActionDialog('Edit permissions')}>Edit permissions</button>
+            <button onClick={() => setActionDialog('Set target')}>Set target</button>
+          </div>
+        </aside>
+      </div>
+      {actionDialog && (
+        <PeopleActionDialog
+          title={actionDialog}
+          subject={selectedStaff.name}
+          rows={[['Staff', selectedStaff.name, selectedStaff.status], ['Role', selectedStaff.role, selectedStaff.access], ['Email', selectedStaff.email, 'Ready']]}
+          onClose={() => { setNotice(`تم تنفيذ ${actionDialog} للموظف ${selectedStaff.name} كواجهة مرئية.`); setActionDialog(null) }}
+        />
+      )}
     </div>
+  )
+}
+
+function PeopleActionDialog({
+  title,
+  subject,
+  rows,
+  onClose,
+}: {
+  title: string
+  subject: string
+  rows: string[][]
+  onClose: () => void
+}) {
+  return (
+    <section className="orders-dialog-backdrop">
+      <dialog className="orders-quick-dialog" open>
+        <header><h2>{title}</h2><button aria-label={`Close ${title}`} onClick={onClose}><X size={18} /></button></header>
+        <div className="quick-order-grid">
+          <Table rows={rows} />
+          <label className="field wide">
+            <span>Note <em>Optional</em></span>
+            <small>Visual action for {subject}.</small>
+            <textarea defaultValue={`تم تجهيز إجراء ${title} كواجهة مرئية.`} />
+          </label>
+        </div>
+        <footer><button onClick={onClose}>Cancel</button><button onClick={onClose}>Apply</button></footer>
+      </dialog>
+    </section>
   )
 }
 
@@ -3068,13 +3238,57 @@ function Reports({ activePage = 'Store performance' }: { activePage?: string }) 
   )
 }
 
-function Support() {
+function Support({ activePage = 'Reviews' }: { activePage?: string }) {
   const supportItems = ['Reviews', 'Questions', 'Reported reviews', 'Tickets', 'Complaints']
-  const [activeSupport, setActiveSupport] = useState(supportItems[0])
+  const [activeSupport, setActiveSupport] = useState(supportItems.includes(activePage) ? activePage : supportItems[0])
+  const [selectedTicket, setSelectedTicket] = useState(sampleSupport.find((item) => item.type === activeSupport) ?? sampleSupport[0])
+  const [actionDialog, setActionDialog] = useState<string | null>(null)
+  const [notice, setNotice] = useState('كل أدوات الدعم جاهزة كواجهات مرئية.')
+  const visibleSupport = sampleSupport.filter((item) => item.type === activeSupport || (activeSupport === 'Complaints' && item.status === 'Needs review'))
+  const selectSupport = (item: string) => {
+    setActiveSupport(item)
+    setSelectedTicket(sampleSupport.find((ticket) => ticket.type === item) ?? sampleSupport[0])
+  }
 
   return (
-    <PageShell crumb="Support" title="Reviews" aside={<FilterList title="Inbox" items={supportItems} activeItem={activeSupport} onItemClick={setActiveSupport} />}>
-      <SplitEmpty title={`No ${activeSupport.toLowerCase()} selected`} action="Filter" context={activeSupport} />
+    <PageShell crumb="Support" title={activeSupport} aside={<FilterList title="Inbox" items={supportItems} activeItem={activeSupport} onItemClick={selectSupport} />}>
+      <p className="action-result">{notice}</p>
+      <div className="records-layout">
+        <section className="record-list">
+          {visibleSupport.length ? visibleSupport.map((ticket) => (
+            <button className={selectedTicket.title === ticket.title ? 'active' : ''} key={ticket.title} onClick={() => setSelectedTicket(ticket)}>
+              <span><b>{ticket.title}</b><small>{ticket.time}</small></span>
+              <span>{ticket.customer}<small>{ticket.type}</small></span>
+              <em>{ticket.status}</em>
+            </button>
+          )) : <Empty title="No results found" body="No support items in this view yet." />}
+        </section>
+        <aside className="record-detail">
+          <div className="detail-head">
+            <div><span>Support details</span><h2>{selectedTicket.title}</h2></div>
+            <em>{selectedTicket.status}</em>
+          </div>
+          <Table rows={[
+            ['Customer', selectedTicket.customer, selectedTicket.type],
+            ['Status', selectedTicket.status, selectedTicket.time],
+            ['Priority', selectedTicket.status === 'Needs review' ? 'High' : 'Normal', 'Visual'],
+            ['SLA', selectedTicket.status === 'Open' ? '2 hours' : 'Ready', 'Draft'],
+          ]} />
+          <div className="detail-actions">
+            <button onClick={() => setActionDialog('Reply')}>Reply</button>
+            <button onClick={() => setActionDialog('Publish')}>Publish</button>
+            <button onClick={() => setActionDialog('Close ticket')}>Close ticket</button>
+          </div>
+        </aside>
+      </div>
+      {actionDialog && (
+        <PeopleActionDialog
+          title={actionDialog}
+          subject={selectedTicket.title}
+          rows={[['Item', selectedTicket.title, selectedTicket.status], ['Customer', selectedTicket.customer, selectedTicket.type], ['Time', selectedTicket.time, 'Ready']]}
+          onClose={() => { setNotice(`تم تنفيذ ${actionDialog} على ${selectedTicket.title} كواجهة مرئية.`); setActionDialog(null) }}
+        />
+      )}
     </PageShell>
   )
 }
@@ -3365,6 +3579,8 @@ function SplitEmpty({ title, action, context = 'All' }: { title: string; action:
     </div>
   )
 }
+
+void SplitEmpty
 
 function Empty({ title, body }: { title: string; body: string }) {
   return <div className="empty"><Boxes size={46} /><h2>{title}</h2><p>{body}</p></div>
